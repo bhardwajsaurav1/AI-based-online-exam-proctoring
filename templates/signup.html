@@ -1,0 +1,32 @@
+﻿{% extends "base.html" %}
+{% block title %}Candidate Registration - AI Proctor{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <div class="auth-header">
+            <i class="fa-solid fa-id-card"></i>
+            <h2>Create Candidate Account</h2>
+            <p>Register to participate in verified AI-proctored online assessments</p>
+        </div>
+        <form action="/signup" method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username"><i class="fa-solid fa-user"></i> Username</label>
+                <input type="text" id="username" name="username" placeholder="Choose a username" required>
+            </div>
+            <div class="form-group">
+                <label for="email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                <input type="email" id="email" name="email" placeholder="student@university.edu" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fa-solid fa-lock"></i> Password</label>
+                <input type="password" id="password" name="password" placeholder="Create strong password" required>
+            </div>
+            <button type="submit" class="btn-block btn-primary"><i class="fa-solid fa-user-plus"></i> Complete Registration</button>
+        </form>
+        <div class="auth-footer">
+            <p>Already registered? <a href="/login">Sign in here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

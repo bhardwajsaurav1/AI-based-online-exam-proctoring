@@ -1,0 +1,132 @@
+﻿{% extends "base.html" %}
+{% block title %}Proctored Examination Session - AI Proctor{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="exam-layout">
+    <!-- Left Column: Examination Questions & Answers -->
+    <div class="exam-panel">
+        <div class="exam-header-bar">
+            <div>
+                <h2><i class="fa-solid fa-graduation-cap"></i> Midterm Assessment: Computer Systems</h2>
+                <p class="exam-meta"><i class="fa-solid fa-user"></i> Candidate: <b>{{ session['user']['username'] }}</b> | Total Questions: 4</p>
+            </div>
+            <div class="timer-box">
+                <span class="timer-label">Time Remaining</span>
+                <span id="exam-timer" class="timer-digits">30:00</span>
+            </div>
+        </div>
+
+        <form id="exam-form" action="/submit_exam" method="POST" class="questions-container">
+            <!-- Question 1 -->
+            <div class="question-card">
+                <div class="q-title"><b>Q1.</b> What is the primary function of the Operating System Kernel?</div>
+                <div class="q-options">
+                    <label class="q-option"><input type="radio" name="q1" value="A" required> <span>A) Compiling high-level programming source code</span></label>
+                    <label class="q-option"><input type="radio" name="q1" value="B"> <span>B) Managing hardware resources and mediating between software and CPU</span></label>
+                    <label class="q-option"><input type="radio" name="q1" value="C"> <span>C) Rendering 3D computer graphics on the monitor</span></label>
+                    <label class="q-option"><input type="radio" name="q1" value="D"> <span>D) Encrypting network traffic across the internet</span></label>
+                </div>
+            </div>
+
+            <!-- Question 2 -->
+            <div class="question-card">
+                <div class="q-title"><b>Q2.</b> Which memory hierarchy level provides the fastest data access speed?</div>
+                <div class="q-options">
+                    <label class="q-option"><input type="radio" name="q2" value="A" required> <span>A) CPU Registers</span></label>
+                    <label class="q-option"><input type="radio" name="q2" value="B"> <span>B) L1 Cache</span></label>
+                    <label class="q-option"><input type="radio" name="q2" value="C"> <span>C) Main Memory (RAM)</span></label>
+                    <label class="q-option"><input type="radio" name="q2" value="D"> <span>D) Solid State Drive (NVMe SSD)</span></label>
+                </div>
+            </div>
+
+            <!-- Question 3 -->
+            <div class="question-card">
+                <div class="q-title"><b>Q3.</b> In Computer Vision, what is the purpose of the Perspective-n-Point (PnP) algorithm?</div>
+                <div class="q-options">
+                    <label class="q-option"><input type="radio" name="q3" value="A" required> <span>A) Image compression and JPEG encoding</span></label>
+                    <label class="q-option"><input type="radio" name="q3" value="B"> <span>B) Estimating 3D pose/orientation from 2D landmark correspondences</span></label>
+                    <label class="q-option"><input type="radio" name="q3" value="C"> <span>C) Applying bilateral blurring to reduce Gaussian noise</span></label>
+                    <label class="q-option"><input type="radio" name="q3" value="D"> <span>D) Performing morphological dilation on binary masks</span></label>
+                </div>
+            </div>
+
+            <!-- Question 4 -->
+            <div class="question-card">
+                <div class="q-title"><b>Q4.</b> How does Eye Aspect Ratio (EAR) differentiate between an open eye and a blink?</div>
+                <div class="q-options">
+                    <label class="q-option"><input type="radio" name="q4" value="A" required> <span>A) EAR drops rapidly below a threshold during eyelid closure</span></label>
+                    <label class="q-option"><input type="radio" name="q4" value="B"> <span>B) EAR measures pupil diameter in dark environments</span></label>
+                    <label class="q-option"><input type="radio" name="q4" value="C"> <span>C) EAR increases proportional to ambient screen luminance</span></label>
+                    <label class="q-option"><input type="radio" name="q4" value="D"> <span>D) EAR performs Fourier transform on corneal reflections</span></label>
+                </div>
+            </div>
+
+            <div class="exam-submit-bar">
+                <button type="submit" class="btn-large btn-success"><i class="fa-solid fa-cloud-arrow-up"></i> Submit Final Assessment</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Column: Live Video Proctoring Stream & Real-time HUD -->
+    <div class="proctor-panel">
+        <div class="video-container">
+            <div class="video-header">
+                <span class="live-tag"><i class="fa-solid fa-circle"></i> PROCTOR LIVE</span>
+                <span id="fps-badge">30 FPS</span>
+            </div>
+            
+            <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Proctoring Feed" class="camera-feed">
+            
+            <div id="violation-banner" class="violation-overlay hidden">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span id="violation-text">Suspicious Movement Detected!</span>
+            </div>
+        </div>
+
+        <!-- Real-time Telemetry Status Matrix -->
+        <div class="telemetry-card">
+            <h3><i class="fa-solid fa-chart-line"></i> Real-Time AI Proctor Diagnostics</h3>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-user"></i> Face Presence:</span>
+                <b id="tele-face" class="badge-status badge-ok">Normal</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-eye"></i> Eye Gaze Direction:</span>
+                <b id="tele-gaze" class="badge-status badge-ok">Center</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-eye-slash"></i> Liveness (Blink):</span>
+                <b id="tele-blink" class="badge-status badge-ok">Active</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-arrows-up-down-left-right"></i> Head Orientation:</span>
+                <b id="tele-pose" class="badge-status badge-ok">Forward</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-comment-dots"></i> Mouth Activity:</span>
+                <b id="tele-mouth" class="badge-status badge-ok">Closed</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-mobile"></i> Unauthorized Objects:</span>
+                <b id="tele-obj" class="badge-status badge-ok">None</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-microphone"></i> Audio Noise Level:</span>
+                <b id="tele-audio" class="badge-status badge-ok">Quiet</b>
+            </div>
+
+            <div class="warning-counter-box">
+                <div class="warn-label"><i class="fa-solid fa-bell"></i> Warning Counter</div>
+                <div id="warn-count" class="warn-number">0</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/exam.js') }}"></script>
+{% endblock %}

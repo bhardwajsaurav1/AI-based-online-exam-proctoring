@@ -1,0 +1,44 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-badge"><i class="fa-solid fa-shield-check"></i> Automated Real-Time Proctoring</div>
+    <h1>Secure, AI-Powered Online Examination System</h1>
+    <p class="hero-subtext">
+        Advanced multi-modal computer vision and acoustic intelligence ensuring test integrity, 
+        liveness verification, head pose estimation, eye gaze tracking, and prohibited object detection.
+    </p>
+
+    <div class="hero-actions">
+        {% if session.get('user') %}
+            <a href="/exam" class="btn-large btn-primary"><i class="fa-solid fa-play"></i> Start Examination Session</a>
+        {% else %}
+            <a href="/login" class="btn-large btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Candidate Sign In</a>
+            <a href="/signup" class="btn-large btn-outline"><i class="fa-solid fa-user-plus"></i> Create Account</a>
+        {% endif %}
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-user-check"></i></div>
+            <h3>Face Presence & Counting</h3>
+            <p>Dlib facial landmark detection monitoring candidate presence and flagging multiple individuals or absence.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-eye"></i></div>
+            <h3>Gaze & Liveness Tracking</h3>
+            <p>Sclera/pupil ratio analysis and Eye Aspect Ratio (EAR) blink tracking to detect off-screen glances and photo spoofing.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+            <h3>Object Detection</h3>
+            <p>YOLOv3 deep neural network scanning the examination area for unauthorized devices such as smartphones, books, and laptops.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon"><i class="fa-solid fa-microphone-lines"></i></div>
+            <h3>Acoustic Surveillance</h3>
+            <p>Continuous microphone audio sampling to flag speech, murmurs, whispering, or external verbal communication.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

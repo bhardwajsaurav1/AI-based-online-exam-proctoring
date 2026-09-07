@@ -1,0 +1,27 @@
+﻿# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Model binary weights (auto-downloaded via setup_models.py)
+models/*.dat
+models/*.weights
+models/*.bz2
+
+# Local Databases & Logs
+*.db
+*.sqlite3
+logs/
+.system_generated/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini

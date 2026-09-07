@@ -1,0 +1,43 @@
+﻿{% extends "base.html" %}
+{% block title %}Assessment Results & Proctor Audit - AI Proctor{% endblock %}
+
+{% block content %}
+<div class="results-wrapper">
+    <div class="results-card">
+        <div class="results-header">
+            <i class="fa-solid fa-circle-check icon-success"></i>
+            <h2>Examination Submitted Successfully</h2>
+            <p>Candidate: <b>{{ session.get('user', {}).get('username', 'Candidate') }}</b></p>
+        </div>
+
+        <div class="score-grid">
+            <div class="score-box">
+                <span class="score-title">Academic Score</span>
+                <span class="score-val">{{ score }} / {{ total_questions }}</span>
+                <span class="score-sub">{{ (score / total_questions * 100)|round|int }}% Score</span>
+            </div>
+            <div class="score-box">
+                <span class="score-title">Proctoring Status</span>
+                <span class="score-val {% if total_violations < 5 %}text-success{% else %}text-danger{% endif %}">
+                    {% if total_violations < 5 %}VERIFIED{% else %}FLAGGED{% endif %}
+                </span>
+                <span class="score-sub">{{ total_violations }} Total Anomaly Flags</span>
+            </div>
+        </div>
+
+        <div class="audit-section">
+            <h3><i class="fa-solid fa-file-waveform"></i> Forensic Examination Activity Audit Log</h3>
+            <p class="audit-desc">A copy of the raw telemetry has been recorded to <code>activity.txt</code>.</p>
+            <div class="log-terminal">
+                <pre>{% for line in recent_logs %}{{ line }}
+{% endfor %}</pre>
+            </div>
+        </div>
+
+        <div class="results-actions">
+            <a href="/" class="btn-primary"><i class="fa-solid fa-house"></i> Return to Home</a>
+            <a href="/download_log" class="btn-outline"><i class="fa-solid fa-download"></i> Download activity.txt</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
