@@ -1,9 +1,10 @@
-﻿"""
+"""
 Configuration settings for AI-Based Online Exam Proctoring System.
 Author: Sole Contributor / Creator
 """
 
 import os
+import tempfile
 from pathlib import Path
 
 # Base Paths
@@ -11,11 +12,19 @@ BASE_DIR = Path(__file__).resolve().parent
 MODELS_DIR = BASE_DIR / "models"
 STATIC_DIR = BASE_DIR / "static"
 TEMPLATES_DIR = BASE_DIR / "templates"
-LOGS_DIR = BASE_DIR / "logs"
 
-# Ensure directories exist
-MODELS_DIR.mkdir(exist_ok=True)
-LOGS_DIR.mkdir(exist_ok=True)
+# Writable temporary directory for serverless environments (e.g. Vercel)
+try:
+    TEMP_DIR = Path(tempfile.gettempdir())
+    LOGS_DIR = TEMP_DIR / "proctor_logs"
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    LOGS_DIR = BASE_DIR / "logs"
+
+try:
+    MODELS_DIR.mkdir(exist_ok=True)
+except Exception:
+    pass
 
 # Model File Paths
 SHAPE_PREDICTOR_PATH = MODELS_DIR / "shape_predictor_68_face_landmarks.dat"
@@ -56,7 +65,7 @@ PROHIBITED_OBJECTS = [
 
 # Database Settings
 DATABASE_TYPE = os.getenv("DB_TYPE", "sqlite")  # 'sqlite' or 'mysql'
-SQLITE_DB_PATH = BASE_DIR / "proctoring.db"
+SQLITE_DB_PATH = LOGS_DIR / "proctoring.db"
 
 MYSQL_CONFIG = {
     "host": os.getenv("MYSQL_HOST", "localhost"),
@@ -73,5 +82,5 @@ DEBUG_MODE = True
 SECRET_KEY = os.getenv("SECRET_KEY", "proctor-super-secure-key-2026")
 
 # Audit File Paths
-ACTIVITY_LOG_TXT = BASE_DIR / "activity.txt"
+ACTIVITY_LOG_TXT = LOGS_DIR / "activity.txt"
 ACTIVITY_LOG_JSON = LOGS_DIR / "activity.json"

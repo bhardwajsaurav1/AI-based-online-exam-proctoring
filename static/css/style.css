@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     --primary: #2563eb;
     --primary-dark: #1d4ed8;
     --success: #16a34a;
@@ -328,4 +328,218 @@ body {
     color: var(--text-muted);
     border-top: 1px solid var(--border-color);
     background: #ffffff;
+}
+
+/* Results & Disqualification Page Styles */
+.results-container {
+    max-width: 800px;
+    margin: 20px auto 40px;
+    width: 100%;
+}
+
+.results-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: var(--shadow-md);
+}
+
+.results-card-danger {
+    border-top: 5px solid var(--danger);
+}
+
+.results-card-success {
+    border-top: 5px solid var(--success);
+}
+
+.results-hero {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.status-icon-bubble {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+}
+
+.icon-danger-bubble {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+.icon-success-bubble {
+    background: #dcfce7;
+    color: var(--success);
+}
+
+.results-title {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 6px;
+}
+
+.candidate-meta {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.disqualified-alert-box {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 14px 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    font-size: 14px;
+    margin-top: 14px;
+}
+
+.disqualified-alert-box i {
+    font-size: 24px;
+    color: var(--danger);
+    flex-shrink: 0;
+}
+
+.verified-alert-box {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    padding: 14px 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    font-size: 14px;
+    margin-top: 14px;
+}
+
+.verified-alert-box i {
+    font-size: 24px;
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+.results-metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.metric-card {
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.metric-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.metric-value {
+    display: block;
+    font-size: 26px;
+    font-weight: 800;
+    font-family: monospace;
+    margin-bottom: 4px;
+}
+
+.metric-note {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.violations-section {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+}
+
+.violations-title {
+    font-size: 16px;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.violations-subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.violation-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.violation-item {
+    background: #fef2f2;
+    border-left: 4px solid var(--danger);
+    padding: 12px 16px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.violation-badge {
+    font-size: 12px;
+    font-weight: 800;
+    color: #991b1b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.violation-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+}
+
+.violation-name {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.violation-time {
+    color: #64748b;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.results-cta-bar {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 20px;
 }

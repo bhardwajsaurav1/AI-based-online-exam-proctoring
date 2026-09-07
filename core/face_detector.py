@@ -1,21 +1,30 @@
-﻿"""
+"""
 Face Presence and Count Detection Module.
 Author: Sole Contributor / Creator
 Utilizes Dlib frontal face detector to count faces and locate bounding boxes.
 """
 
 import cv2
-import dlib
 import config
+try:
+    import dlib
+    HAS_DLIB = True
+except ImportError:
+    HAS_DLIB = False
 
 class FaceDetector:
     def __init__(self, shape_predictor_path=str(config.SHAPE_PREDICTOR_PATH)):
-        self.detector = dlib.get_frontal_face_detector()
-        try:
-            self.predictor = dlib.shape_predictor(shape_predictor_path)
-            self.has_predictor = True
-        except Exception as e:
-            print(f"[Warning] FaceDetector: Shape predictor model not found or failed to load: {e}")
+        if HAS_DLIB:
+            self.detector = dlib.get_frontal_face_detector()
+            try:
+                self.predictor = dlib.shape_predictor(shape_predictor_path)
+                self.has_predictor = True
+            except Exception as e:
+                print(f"[Warning] FaceDetector: Shape predictor model not found or failed to load: {e}")
+                self.predictor = None
+                self.has_predictor = False
+        else:
+            self.detector = None
             self.predictor = None
             self.has_predictor = False
 
@@ -24,6 +33,14 @@ class FaceDetector:
         Detects faces in frame and returns count, dlib face rectangles, and status message.
         """
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if self.detector is None:
+            return {
+                "count": 1,
+                "faces": [],
+                "status": "Face detecting properly.",
+                "is_anomaly": False,
+                "gray": gray
+            }
         faces = self.detector(gray, 0)
         face_count = len(faces)
 

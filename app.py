@@ -1,4 +1,4 @@
-﻿"""
+"""
 AI-Based Online Exam Proctoring System - Main Flask Application Server.
 Author: Sole Contributor / Creator
 """
@@ -6,14 +6,22 @@ Author: Sole Contributor / Creator
 import cv2
 import time
 import os
-from flask import Flask, render_template, Response, request, redirect, url_for, session, flash, jsonify, send_file
+from datetime import datetime
+from flask import Flask, render_template, Response, request, redirect, url_for, session, flash, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import config
 from backend.database import Database
 from backend.logger import ForensicLogger
+from backend.question_bank import generate_random_exam
 from core.proctor_engine import ProctorEngine
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(
+    __name__,
+    static_folder=os.path.join(BASE_DIR, 'static'),
+    static_url_path='/static',
+    template_folder=os.path.join(BASE_DIR, 'templates')
+)
 app.secret_key = config.SECRET_KEY
 CORS(app)
 
@@ -117,7 +125,17 @@ def exam():
     if 'user' not in session:
         flash('Please login to access the examination.', 'error')
         return redirect(url_for('login'))
-    return render_template('exam.html')
+
+    # Generate a fresh randomized set of questions for this session
+    questions, answer_key = generate_random_exam(num_questions=4)
+    session['exam_questions'] = questions
+    session['exam_answer_key'] = answer_key
+    session['violation_history'] = []
+    session['is_disqualified'] = False
+    session['exam_score'] = 0
+    engine.warning_count = 0
+
+    return render_template('exam.html', questions=questions)
 
 @app.route('/video_feed')
 def video_feed():
@@ -133,17 +151,11 @@ def submit_exam():
     if 'user' not in session:
         return redirect(url_for('login'))
 
-    # Answer Key Evaluation
-    CORRECT_ANSWERS = {
-        'q1': 'B',
-        'q2': 'A',
-        'q3': 'B',
-        'q4': 'A'
-    }
-
+    answer_key = session.get('exam_answer_key', {})
     score = 0
-    total_q = len(CORRECT_ANSWERS)
-    for q_id, correct_opt in CORRECT_ANSWERS.items():
+    total_q = len(answer_key) if answer_key else 4
+
+    for q_id, correct_opt in answer_key.items():
         if request.form.get(q_id) == correct_opt:
             score += 1
 
@@ -153,27 +165,60 @@ def submit_exam():
 
     return redirect(url_for('results'))
 
+@app.route('/log_violation', methods=['POST'])
+def log_violation():
+    data = request.get_json(silent=True) or {}
+    violation_type = data.get('type', 'Proctoring Anomaly')
+    time_str = datetime.now().strftime("%H:%M:%S")
+    timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    engine.warning_count += 1
+
+    v_list = session.get('violation_history', [])
+    v_list.append({"type": violation_type, "time": time_str, "warning_num": engine.warning_count})
+    session['violation_history'] = v_list
+
+    log_line = f"[{timestamp_str}] [VIOLATION] Type: {violation_type} | Warnings: {engine.warning_count}"
+    logger.log_record(log_line, {
+        "timestamp": timestamp_str,
+        "violation_type": violation_type,
+        "is_violation": True,
+        "warning_count": engine.warning_count
+    })
+    return jsonify({"status": "ok", "warning_count": engine.warning_count})
+
+@app.route('/disqualify_exam', methods=['POST'])
+def disqualify_exam():
+    data = request.get_json(silent=True) or {}
+    reason = data.get('reason', 'Exceeded maximum violation warnings (5 / 5 Warnings).')
+    if 'user' in session:
+        session['is_disqualified'] = True
+        session['exam_score'] = 0
+        session['total_questions'] = 4
+        session['total_violations'] = engine.warning_count
+        session['disqualification_reason'] = reason
+
+        timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_line = f"[{timestamp_str}] [DISQUALIFIED] Candidate exceeded warning threshold ({reason}). Examination terminated."
+        logger.log_record(log_line, {
+            "timestamp": timestamp_str,
+            "disqualified": True,
+            "warning_count": engine.warning_count
+        })
+    return jsonify({"status": "disqualified", "redirect_url": url_for('results')})
+
 @app.route('/results')
 def results():
     if 'user' not in session:
         return redirect(url_for('login'))
-
-    # Read last 15 lines from activity.txt for display
-    recent_logs = []
-    if config.ACTIVITY_LOG_TXT.exists():
-        try:
-            with open(config.ACTIVITY_LOG_TXT, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-                recent_logs = [line.strip() for line in lines[-15:]]
-        except Exception:
-            recent_logs = ["[activity.txt initialized]"]
 
     return render_template(
         'results.html',
         score=session.get('exam_score', 0),
         total_questions=session.get('total_questions', 4),
         total_violations=session.get('total_violations', engine.warning_count),
-        recent_logs=recent_logs
+        is_disqualified=session.get('is_disqualified', False),
+        disqualification_reason=session.get('disqualification_reason', ''),
+        violations=session.get('violation_history', [])
     )
 
 @app.route('/download_log')

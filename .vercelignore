@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+models/*.dat
+models/*.weights
+*.pdf
+tests/
+scratch/
+.pytest_cache/

@@ -1,11 +1,18 @@
-﻿# AI-Based Online Exam Proctoring System
+# AI-Based Online Exam Proctoring System
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel%20Production-blueviolet?style=for-the-badge&logo=vercel)](https://ai-exam-proctoring-system-five.vercel.app)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green.svg)](https://opencv.org/)
 [![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg)](https://flask.palletsprojects.com/)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
+## 📖 About The Project
+
 An automated, real-time AI-powered invigilation and online examination monitoring platform developed to safeguard academic integrity and prevent cheating during remote examinations.
+
+- 🌐 **Live Vercel Deployment**: [https://ai-exam-proctoring-system-five.vercel.app](https://ai-exam-proctoring-system-five.vercel.app)
+- 👤 **Author & Creator**: [bhardwajsaurav1](https://github.com/bhardwajsaurav1)
+- 📝 **Live Exam Demo**: Instant access with credentials `student1` / `password123` or create an account via Registration.
 
 ---
 

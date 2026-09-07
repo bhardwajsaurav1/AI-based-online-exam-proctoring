@@ -1,68 +1,59 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Proctored Examination Session - AI Proctor{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/exam.css') }}">
 {% endblock %}
 
 {% block content %}
-<div class="exam-layout">
+<div id="exam-main-container" class="exam-layout">
     <!-- Left Column: Examination Questions & Answers -->
-    <div class="exam-panel">
+    <div id="exam-panel" class="exam-panel">
         <div class="exam-header-bar">
             <div>
                 <h2><i class="fa-solid fa-graduation-cap"></i> Midterm Assessment: Computer Systems</h2>
-                <p class="exam-meta"><i class="fa-solid fa-user"></i> Candidate: <b>{{ session['user']['username'] }}</b> | Total Questions: 4</p>
+                <p class="exam-meta"><i class="fa-solid fa-user"></i> Candidate: <b>{{ session.get('user', {}).get('username', 'Student') }}</b> | Total Questions: 4</p>
             </div>
-            <div class="timer-box">
-                <span class="timer-label">Time Remaining</span>
-                <span id="exam-timer" class="timer-digits">30:00</span>
+            <div class="header-status-group">
+                <div class="warn-meter-box">
+                    <span class="meter-label"><i class="fa-solid fa-triangle-exclamation"></i> Violation Limit</span>
+                    <span id="warn-meter-digits" class="meter-digits">0 / 5</span>
+                </div>
+                <div class="timer-box">
+                    <span class="timer-label"><i class="fa-solid fa-clock"></i> Time Left</span>
+                    <span id="exam-timer" class="timer-digits">30:00</span>
+                </div>
             </div>
         </div>
 
         <form id="exam-form" action="/submit_exam" method="POST" class="questions-container">
-            <!-- Question 1 -->
-            <div class="question-card">
-                <div class="q-title"><b>Q1.</b> What is the primary function of the Operating System Kernel?</div>
-                <div class="q-options">
-                    <label class="q-option"><input type="radio" name="q1" value="A" required> <span>A) Compiling high-level programming source code</span></label>
-                    <label class="q-option"><input type="radio" name="q1" value="B"> <span>B) Managing hardware resources and mediating between software and CPU</span></label>
-                    <label class="q-option"><input type="radio" name="q1" value="C"> <span>C) Rendering 3D computer graphics on the monitor</span></label>
-                    <label class="q-option"><input type="radio" name="q1" value="D"> <span>D) Encrypting network traffic across the internet</span></label>
+            {% if questions and questions|length > 0 %}
+                {% for q in questions %}
+                <div class="question-card">
+                    <div class="q-header">
+                        <span class="q-category-tag"><i class="fa-solid fa-tag"></i> {{ q.category }}</span>
+                    </div>
+                    <div class="q-title"><b>Q{{ loop.index }}.</b> {{ q.question }}</div>
+                    <div class="q-options">
+                        {% for opt in q.options %}
+                        <label class="q-option">
+                            <input type="radio" name="{{ q.id }}" value="{{ opt.key }}" required>
+                            <span><b>{{ opt.key }})</b> {{ opt.text }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
-
-            <!-- Question 2 -->
-            <div class="question-card">
-                <div class="q-title"><b>Q2.</b> Which memory hierarchy level provides the fastest data access speed?</div>
-                <div class="q-options">
-                    <label class="q-option"><input type="radio" name="q2" value="A" required> <span>A) CPU Registers</span></label>
-                    <label class="q-option"><input type="radio" name="q2" value="B"> <span>B) L1 Cache</span></label>
-                    <label class="q-option"><input type="radio" name="q2" value="C"> <span>C) Main Memory (RAM)</span></label>
-                    <label class="q-option"><input type="radio" name="q2" value="D"> <span>D) Solid State Drive (NVMe SSD)</span></label>
+                {% endfor %}
+            {% else %}
+                <div class="question-card">
+                    <div class="q-title"><b>Q1.</b> What is the primary function of the Operating System Kernel?</div>
+                    <div class="q-options">
+                        <label class="q-option"><input type="radio" name="q1" value="A" required> <span>A) Compiling high-level programming source code</span></label>
+                        <label class="q-option"><input type="radio" name="q1" value="B"> <span>B) Managing hardware resources and mediating between software and CPU</span></label>
+                        <label class="q-option"><input type="radio" name="q1" value="C"> <span>C) Rendering 3D computer graphics on the monitor</span></label>
+                        <label class="q-option"><input type="radio" name="q1" value="D"> <span>D) Encrypting network traffic across the internet</span></label>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Question 3 -->
-            <div class="question-card">
-                <div class="q-title"><b>Q3.</b> In Computer Vision, what is the purpose of the Perspective-n-Point (PnP) algorithm?</div>
-                <div class="q-options">
-                    <label class="q-option"><input type="radio" name="q3" value="A" required> <span>A) Image compression and JPEG encoding</span></label>
-                    <label class="q-option"><input type="radio" name="q3" value="B"> <span>B) Estimating 3D pose/orientation from 2D landmark correspondences</span></label>
-                    <label class="q-option"><input type="radio" name="q3" value="C"> <span>C) Applying bilateral blurring to reduce Gaussian noise</span></label>
-                    <label class="q-option"><input type="radio" name="q3" value="D"> <span>D) Performing morphological dilation on binary masks</span></label>
-                </div>
-            </div>
-
-            <!-- Question 4 -->
-            <div class="question-card">
-                <div class="q-title"><b>Q4.</b> How does Eye Aspect Ratio (EAR) differentiate between an open eye and a blink?</div>
-                <div class="q-options">
-                    <label class="q-option"><input type="radio" name="q4" value="A" required> <span>A) EAR drops rapidly below a threshold during eyelid closure</span></label>
-                    <label class="q-option"><input type="radio" name="q4" value="B"> <span>B) EAR measures pupil diameter in dark environments</span></label>
-                    <label class="q-option"><input type="radio" name="q4" value="C"> <span>C) EAR increases proportional to ambient screen luminance</span></label>
-                    <label class="q-option"><input type="radio" name="q4" value="D"> <span>D) EAR performs Fourier transform on corneal reflections</span></label>
-                </div>
-            </div>
+            {% endif %}
 
             <div class="exam-submit-bar">
                 <button type="submit" class="btn-large btn-success"><i class="fa-solid fa-cloud-arrow-up"></i> Submit Final Assessment</button>
@@ -74,11 +65,13 @@
     <div class="proctor-panel">
         <div class="video-container">
             <div class="video-header">
-                <span class="live-tag"><i class="fa-solid fa-circle"></i> PROCTOR LIVE</span>
-                <span id="fps-badge">30 FPS</span>
+                <span class="live-tag"><i class="fa-solid fa-circle"></i> AI PROCTOR LIVE</span>
+                <span id="ai-model-badge" class="face-track-badge"><i class="fa-solid fa-brain"></i> Neural Vision</span>
             </div>
             
-            <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Proctoring Feed" class="camera-feed">
+            <!-- Browser Client Camera Video with Canvas Overlay -->
+            <video id="client-video" autoplay playsinline muted class="camera-feed"></video>
+            <canvas id="client-canvas" class="hud-canvas"></canvas>
             
             <div id="violation-banner" class="violation-overlay hidden">
                 <i class="fa-solid fa-triangle-exclamation"></i>
@@ -91,42 +84,71 @@
             <h3><i class="fa-solid fa-chart-line"></i> Real-Time AI Proctor Diagnostics</h3>
             <div class="metric-row">
                 <span><i class="fa-solid fa-user"></i> Face Presence:</span>
-                <b id="tele-face" class="badge-status badge-ok">Normal</b>
-            </div>
-            <div class="metric-row">
-                <span><i class="fa-solid fa-eye"></i> Eye Gaze Direction:</span>
-                <b id="tele-gaze" class="badge-status badge-ok">Center</b>
-            </div>
-            <div class="metric-row">
-                <span><i class="fa-solid fa-eye-slash"></i> Liveness (Blink):</span>
-                <b id="tele-blink" class="badge-status badge-ok">Active</b>
+                <b id="tele-face" class="badge-status badge-ok">Centered & Verified</b>
             </div>
             <div class="metric-row">
                 <span><i class="fa-solid fa-arrows-up-down-left-right"></i> Head Orientation:</span>
                 <b id="tele-pose" class="badge-status badge-ok">Forward</b>
             </div>
             <div class="metric-row">
-                <span><i class="fa-solid fa-comment-dots"></i> Mouth Activity:</span>
-                <b id="tele-mouth" class="badge-status badge-ok">Closed</b>
+                <span><i class="fa-solid fa-eye"></i> Eye Gaze:</span>
+                <b id="tele-gaze" class="badge-status badge-ok">Center</b>
             </div>
             <div class="metric-row">
-                <span><i class="fa-solid fa-mobile"></i> Unauthorized Objects:</span>
-                <b id="tele-obj" class="badge-status badge-ok">None</b>
-            </div>
-            <div class="metric-row">
-                <span><i class="fa-solid fa-microphone"></i> Audio Noise Level:</span>
-                <b id="tele-audio" class="badge-status badge-ok">Quiet</b>
+                <span><i class="fa-solid fa-window-restore"></i> Window Focus:</span>
+                <b id="tele-focus" class="badge-status badge-ok">Active Tab</b>
             </div>
 
             <div class="warning-counter-box">
                 <div class="warn-label"><i class="fa-solid fa-bell"></i> Warning Counter</div>
-                <div id="warn-count" class="warn-number">0</div>
+                <div id="warn-count" class="warn-number">0 / 5</div>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Critical Tab Switch Warning Modal -->
+<div id="tab-switch-modal" class="modal-backdrop hidden">
+    <div class="modal-card modal-danger">
+        <div class="modal-icon-pulse"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h2>CRITICAL PROCTORING VIOLATION</h2>
+        <p class="modal-lead">Tab Switch or Window Blur Detected!</p>
+        <p class="modal-sub">
+            Examination policy strictly forbids navigating away from this testing environment.
+            This incident has been permanently logged into your forensic activity report.
+        </p>
+        <div class="modal-warning-bar">
+            <span>Warning Level:</span>
+            <b id="modal-warn-count">1 / 5</b>
+        </div>
+        <p class="modal-caution"><i class="fa-solid fa-circle-exclamation"></i> Accumulating 5 warnings will immediately terminate and disqualify your exam.</p>
+        <button id="modal-acknowledge-btn" class="btn-large btn-danger"><i class="fa-solid fa-arrow-left"></i> Return to Examination</button>
+    </div>
+</div>
+
+<!-- Disqualification Fullscreen Overlay (Test Disappears) -->
+<div id="disqualified-overlay" class="modal-backdrop hidden">
+    <div class="modal-card modal-disqualified">
+        <div class="modal-icon-pulse text-danger"><i class="fa-solid fa-ban"></i></div>
+        <h1 class="text-danger">EXAMINATION TERMINATED</h1>
+        <p class="disqualified-lead">Candidate Disqualified for Policy Violations</p>
+        <p class="disqualified-desc">
+            You have exceeded the maximum allowable proctoring violation warnings (5/5). 
+            Your exam session has been locked and permanently terminated.
+        </p>
+        <div class="disqualification-reasons" id="disqualify-reasons-list">
+            <div><i class="fa-solid fa-xmark"></i> Multiple Tab Switches / Window Minimizations</div>
+            <div><i class="fa-solid fa-xmark"></i> Face Left Camera Window / Absence from Screen</div>
+            <div><i class="fa-solid fa-xmark"></i> Multiple People / Suspicious Activity in Camera</div>
+        </div>
+        <p class="redirecting-notice"><i class="fa-solid fa-spinner fa-spin"></i> Submitting forensic activity record and redirecting...</p>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
+<!-- High-Performance Neural Vision Face Detection (TensorFlow.js + BlazeFace) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
 <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
 {% endblock %}

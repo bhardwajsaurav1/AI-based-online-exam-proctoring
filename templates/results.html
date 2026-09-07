@@ -1,42 +1,107 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Assessment Results & Proctor Audit - AI Proctor{% endblock %}
 
 {% block content %}
-<div class="results-wrapper">
-    <div class="results-card">
-        <div class="results-header">
-            <i class="fa-solid fa-circle-check icon-success"></i>
-            <h2>Examination Submitted Successfully</h2>
-            <p>Candidate: <b>{{ session.get('user', {}).get('username', 'Candidate') }}</b></p>
+<div class="results-container">
+    <div class="results-card {% if is_disqualified %}results-card-danger{% else %}results-card-success{% endif %}">
+        
+        <!-- Header Section -->
+        <div class="results-hero">
+            {% if is_disqualified %}
+            <div class="status-icon-bubble icon-danger-bubble">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h1 class="results-title text-danger">Examination Terminated & Disqualified</h1>
+            <p class="candidate-meta">Candidate: <b>{{ session.get('user', {}).get('username', 'Candidate') }}</b></p>
+            <div class="disqualified-alert-box">
+                <i class="fa-solid fa-ban"></i>
+                <div>
+                    <b>Disqualification Notice:</b>
+                    <span>{{ disqualification_reason or 'Candidate exceeded the maximum allowable proctoring violation limit (5/5).' }}</span>
+                </div>
+            </div>
+            {% else %}
+            <div class="status-icon-bubble icon-success-bubble">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h1 class="results-title text-success">Examination Submitted Successfully</h1>
+            <p class="candidate-meta">Candidate: <b>{{ session.get('user', {}).get('username', 'Candidate') }}</b></p>
+            <div class="verified-alert-box">
+                <i class="fa-solid fa-shield-check"></i>
+                <div>
+                    <b>Proctoring Verified:</b>
+                    <span>Examination session completed within integrity standards.</span>
+                </div>
+            </div>
+            {% endif %}
         </div>
 
-        <div class="score-grid">
-            <div class="score-box">
-                <span class="score-title">Academic Score</span>
-                <span class="score-val">{{ score }} / {{ total_questions }}</span>
-                <span class="score-sub">{{ (score / total_questions * 100)|round|int }}% Score</span>
-            </div>
-            <div class="score-box">
-                <span class="score-title">Proctoring Status</span>
-                <span class="score-val {% if total_violations < 5 %}text-success{% else %}text-danger{% endif %}">
-                    {% if total_violations < 5 %}VERIFIED{% else %}FLAGGED{% endif %}
+        <!-- Metrics Grid -->
+        <div class="results-metrics-grid">
+            <div class="metric-card">
+                <span class="metric-label">Academic Score</span>
+                <span class="metric-value {% if is_disqualified %}text-danger{% else %}text-primary{% endif %}">
+                    {{ score }} / {{ total_questions }}
                 </span>
-                <span class="score-sub">{{ total_violations }} Total Anomaly Flags</span>
+                <span class="metric-note">
+                    {% if is_disqualified %}
+                    0% (Voided due to Disqualification)
+                    {% else %}
+                    {{ (score / total_questions * 100)|round|int }}% Total Score
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-label">Proctoring Verdict</span>
+                <span class="metric-value {% if is_disqualified or total_violations >= 5 %}text-danger{% else %}text-success{% endif %}">
+                    {% if is_disqualified or total_violations >= 5 %}DISQUALIFIED{% else %}VERIFIED CLEAN{% endif %}
+                </span>
+                <span class="metric-note">
+                    {{ total_violations }} Total Anomaly Flags Logged
+                </span>
             </div>
         </div>
 
-        <div class="audit-section">
-            <h3><i class="fa-solid fa-file-waveform"></i> Forensic Examination Activity Audit Log</h3>
-            <p class="audit-desc">A copy of the raw telemetry has been recorded to <code>activity.txt</code>.</p>
-            <div class="log-terminal">
-                <pre>{% for line in recent_logs %}{{ line }}
-{% endfor %}</pre>
+        <!-- Disqualification Reasons Breakdown -->
+        {% if is_disqualified or violations %}
+        <div class="violations-section">
+            <h3 class="violations-title">
+                <i class="fa-solid fa-clipboard-list"></i> Recorded Violation Timeline & Causes
+            </h3>
+            <p class="violations-subtitle">The following incidents were flagged by the real-time AI Proctor engine:</p>
+
+            <div class="violation-timeline">
+                {% if violations and violations|length > 0 %}
+                    {% for v in violations %}
+                    <div class="violation-item">
+                        <div class="violation-badge">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Warning {{ v.warning_num or loop.index }}
+                        </div>
+                        <div class="violation-content">
+                            <span class="violation-name">{{ v.type }}</span>
+                            <span class="violation-time"><i class="fa-solid fa-clock"></i> {{ v.time }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="violation-item">
+                        <div class="violation-badge">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Warning
+                        </div>
+                        <div class="violation-content">
+                            <span class="violation-name">{{ disqualification_reason or 'Candidate exceeded allowable proctoring violation threshold (5/5).' }}</span>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
+        {% endif %}
 
-        <div class="results-actions">
-            <a href="/" class="btn-primary"><i class="fa-solid fa-house"></i> Return to Home</a>
-            <a href="/download_log" class="btn-outline"><i class="fa-solid fa-download"></i> Download activity.txt</a>
+        <!-- Action Buttons -->
+        <div class="results-cta-bar">
+            <a href="/" class="btn-large btn-outline"><i class="fa-solid fa-house"></i> Return to Home</a>
+            <a href="/exam" class="btn-large btn-primary"><i class="fa-solid fa-rotate-right"></i> Retake Examination</a>
         </div>
     </div>
 </div>
