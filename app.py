@@ -14,6 +14,8 @@ from backend.database import Database
 from backend.logger import ForensicLogger
 from backend.question_bank import generate_random_exam
 from core.proctor_engine import ProctorEngine
+from webauthn_routes import bp as webauthn_bp
+from backend import webauthn_store
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(
@@ -24,6 +26,9 @@ app = Flask(
 )
 app.secret_key = config.SECRET_KEY
 CORS(app)
+
+# Register WebAuthn / FIDO2 biometric authentication blueprint
+app.register_blueprint(webauthn_bp)
 
 # Initialize Database, Logger, and AI Proctoring Engine
 db = Database()
@@ -93,9 +98,18 @@ def login():
         password = request.form.get('password')
         user = db.authenticate_user(username, password)
         if user:
-            session['user'] = user
-            flash('Login successful! Welcome to the examination portal.', 'success')
-            return redirect(url_for('exam'))
+            from webauthn_routes import username_of
+            uname = username_of(user)
+            if webauthn_store.has_credentials(uname):
+                # Has biometrics enrolled → require biometric MFA step
+                session['pending_mfa'] = {'user': user, 't': time.time()}
+                next_url = request.args.get('next', url_for('exam'))
+                return redirect(url_for('webauthn.mfa_page', next=next_url))
+            else:
+                # No biometrics yet → log in but prompt to set up biometrics
+                session['user'] = user
+                session['show_biometric_setup'] = True
+                return redirect(url_for('webauthn.security_page'))
         else:
             flash('Invalid username/email or password.', 'error')
     return render_template('login.html')
@@ -108,11 +122,30 @@ def signup():
         password = request.form.get('password')
         success = db.register_user(email, username, password)
         if success:
-            flash('Account created successfully! Please sign in.', 'success')
-            return redirect(url_for('login'))
+            # Auto-login the new user and redirect straight to biometric setup
+            user = db.authenticate_user(username, password)
+            if user:
+                session['user'] = user
+                session['show_biometric_setup'] = True
+            return redirect(url_for('webauthn.security_page'))
         else:
             flash('Registration failed. Username or email may already be registered.', 'error')
     return render_template('signup.html')
+
+@app.route('/skip_biometric_setup')
+def skip_biometric_setup():
+    """Allow users to bypass biometric setup and go straight to the exam."""
+    session.pop('show_biometric_setup', None)
+    if 'user' not in session:
+        return redirect(url_for('login'))
+    flash('You can set up biometrics anytime from the Security tab.', 'success')
+    return redirect(url_for('exam'))
+
+@app.route('/clear_setup_flag', methods=['POST'])
+def clear_setup_flag():
+    """AJAX endpoint to clear the one-time biometric setup banner flag."""
+    session.pop('show_biometric_setup', None)
+    return jsonify(ok=True)
 
 @app.route('/logout')
 def logout():
@@ -229,5 +262,5 @@ def download_log():
     return redirect(url_for('results'))
 
 if __name__ == '__main__':
-    print(f"[✓] Starting AI Proctoring Web Server on http://localhost:{config.SERVER_PORT}")
+    print(f"[OK] Starting AI Proctoring Web Server on http://localhost:{config.SERVER_PORT}")
     app.run(host=config.SERVER_HOST, port=config.SERVER_PORT, debug=config.DEBUG_MODE)

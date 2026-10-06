@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}Biometric Verification - AI Proctor{% endblock %}
+
+{% block extra_css %}
+<style>
+  .mfa-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .mfa-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    padding: 44px 40px 36px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 460px;
+    box-shadow: 0 20px 60px -12px rgba(37,99,235,.18), 0 4px 16px -4px rgba(0,0,0,.08);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mfa-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed, #06b6d4);
+    border-radius: 20px 20px 0 0;
+  }
+
+  .bio-ring-container {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 28px;
+  }
+
+  .bio-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    animation: bio-spin 2.4s linear infinite;
+    background: linear-gradient(#fff, #fff) padding-box,
+                linear-gradient(135deg, #2563eb, #7c3aed, #06b6d4) border-box;
+  }
+
+  .bio-ring-2 {
+    inset: 8px;
+    border-width: 2px;
+    animation-duration: 1.8s;
+    animation-direction: reverse;
+    opacity: .5;
+  }
+
+  @keyframes bio-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .bio-icon-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    color: var(--primary);
+  }
+
+  .bio-icon-inner i {
+    animation: bio-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes bio-pulse {
+    0%, 100% { transform: scale(1);   opacity: 1;   }
+    50%       { transform: scale(.9); opacity: .65; }
+  }
+
+  .mfa-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 6px;
+  }
+
+  .mfa-subtitle {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin-bottom: 28px;
+  }
+
+  #wa-status {
+    min-height: 20px;
+    font-size: 13.5px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: color .2s;
+  }
+
+  #wa-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+    padding: 10px 14px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    line-height: 1.5;
+  }
+
+  .btn-biometric {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    letter-spacing: .01em;
+  }
+
+  .btn-biometric:hover:not(:disabled) {
+    opacity: .93;
+    transform: translateY(-1px);
+  }
+
+  .btn-biometric:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .mfa-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .mfa-divider::before,
+  .mfa-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+
+  .mfa-footer {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .mfa-footer a {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .mfa-footer a:hover {
+    text-decoration: underline;
+  }
+
+  .device-icons {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    margin-bottom: 24px;
+    color: var(--text-muted);
+    font-size: 24px;
+  }
+
+  .device-icons i {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: #f8fafc;
+    transition: color .2s, border-color .2s, transform .2s;
+  }
+
+  .device-icons i:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mfa-wrapper">
+  <div class="mfa-card">
+
+    <div class="bio-ring-container">
+      <div class="bio-ring"></div>
+      <div class="bio-ring bio-ring-2"></div>
+      <div class="bio-icon-inner"><i class="fa-solid fa-fingerprint"></i></div>
+    </div>
+
+    <h1 class="mfa-title">Biometric Verification</h1>
+    <p class="mfa-subtitle">
+      One more step &mdash; verify your identity using your device biometrics,
+      Windows Hello, Face&nbsp;ID, or USB security key.
+    </p>
+
+    <div class="device-icons">
+      <i class="fa-solid fa-mobile-screen" title="Android / iPhone biometric"></i>
+      <i class="fa-solid fa-laptop" title="Windows Hello / Touch ID"></i>
+      <i class="fa-solid fa-key" title="USB Security Key"></i>
+    </div>
+
+    <div id="wa-status"></div>
+    <div id="wa-hint"></div>
+
+    <button id="wa-auth-btn"
+            class="btn-biometric"
+            data-next="{{ next_url | default('/exam') }}">
+      <i class="fa-solid fa-shield-check"></i>
+      Verify with Biometrics
+    </button>
+
+    <div class="mfa-divider">or</div>
+
+    <div class="mfa-footer">
+      <p>Not you? <a href="/logout">Switch account</a></p>
+      <p style="margin-top:8px;">Lost your device?
+        <a href="mailto:admin@exam.org">Contact support</a></p>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

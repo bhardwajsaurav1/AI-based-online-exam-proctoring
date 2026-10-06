@@ -1,4 +1,4 @@
-﻿"""
+"""
 Standalone Desktop AI Proctoring Runner (OpenCV Direct View).
 Author: Sole Contributor / Creator
 """
@@ -44,7 +44,7 @@ def main():
 
     cam.release()
     cv2.destroyAllWindows()
-    print("[✓] Session terminated. Logs saved to activity.txt.")
+    print("[OK] Session terminated. Logs saved to activity.txt.")
 
 if __name__ == "__main__":
     main()

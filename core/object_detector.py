@@ -1,4 +1,4 @@
-﻿"""
+"""
 Unauthorized Object Detection Module.
 Author: Sole Contributor / Creator
 Uses YOLOv3-Tiny via OpenCV DNN to detect mobile phones, books, laptops, etc.
@@ -28,7 +28,7 @@ class ObjectDetector:
             layer_names = self.net.getLayerNames()
             self.output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
             self.is_loaded = True
-            print("[✓] ObjectDetector: YOLOv3-Tiny initialized successfully.")
+            print("[OK] ObjectDetector: YOLOv3-Tiny initialized successfully.")
         except Exception as e:
             print(f"[Warning] ObjectDetector: YOLO weights or configuration not loaded: {e}")
             self.is_loaded = False

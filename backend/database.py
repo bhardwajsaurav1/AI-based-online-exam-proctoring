@@ -76,7 +76,7 @@ class Database:
                     )
                 conn.commit()
                 conn.close()
-                print(f"[✓] Database: SQLite initialized at {self.sqlite_path}")
+                print(f"[OK] Database: SQLite initialized at {self.sqlite_path}")
             except Exception as e:
                 print(f"[Warning] SQLite init notice (using resilient memory registry): {e}")
 
@@ -96,7 +96,7 @@ class Database:
                 cnx.commit()
                 cursor.close()
                 cnx.close()
-                print("[✓] Database: MySQL connection initialized successfully.")
+                print("[OK] Database: MySQL connection initialized successfully.")
             except Exception as e:
                 print(f"[Warning] Database: MySQL connection failed, falling back to SQLite: {e}")
                 self.db_type = "sqlite"

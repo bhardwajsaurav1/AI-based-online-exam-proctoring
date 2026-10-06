@@ -543,3 +543,26 @@ body {
     flex-wrap: wrap;
     margin-top: 20px;
 }
+
+/* ── WebAuthn / Biometric helpers ── */
+.nav-links a.nav-security {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.wa-badge-mfa {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+

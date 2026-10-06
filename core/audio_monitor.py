@@ -1,4 +1,4 @@
-﻿"""
+"""
 Audio & Microphone Noise Monitoring Module.
 Author: Sole Contributor / Creator
 Captures real-time PCM audio and flags noise levels exceeding calibrated threshold.
@@ -30,7 +30,7 @@ class AudioMonitor:
         self.is_running = True
         self.thread = threading.Thread(target=self._audio_loop, daemon=True)
         self.thread.start()
-        print("[✓] AudioMonitor: Background audio listening stream started.")
+        print("[OK] AudioMonitor: Background audio listening stream started.")
 
     def _audio_loop(self):
         p = pyaudio.PyAudio()
