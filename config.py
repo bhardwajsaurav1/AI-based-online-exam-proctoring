@@ -80,7 +80,9 @@ SERVER_HOST = "0.0.0.0"
 SERVER_PORT = 5000
 DEBUG_MODE = True
 SECRET_KEY = os.getenv("SECRET_KEY", "proctor-super-secure-key-2026")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
 
 # Audit File Paths
 ACTIVITY_LOG_TXT = LOGS_DIR / "activity.txt"
 ACTIVITY_LOG_JSON = LOGS_DIR / "activity.json"
+

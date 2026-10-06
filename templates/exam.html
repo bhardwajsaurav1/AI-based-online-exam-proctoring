@@ -26,11 +26,18 @@
         </div>
 
         <form id="exam-form" action="/submit_exam" method="POST" class="questions-container">
+            <!-- SECTION A: Multiple Choice Questions -->
+            <div class="exam-section-divider">
+                <div class="section-title-badge"><i class="fa-solid fa-list-check"></i> Section A: Multiple-Choice Questions (3 Marks)</div>
+                <p class="section-instruction">Select the single best answer for each question.</p>
+            </div>
+
             {% if questions and questions|length > 0 %}
                 {% for q in questions %}
                 <div class="question-card">
                     <div class="q-header">
                         <span class="q-category-tag"><i class="fa-solid fa-tag"></i> {{ q.category }}</span>
+                        <span class="q-marks-tag"><i class="fa-solid fa-star"></i> 1 Mark</span>
                     </div>
                     <div class="q-title"><b>Q{{ loop.index }}.</b> {{ q.question }}</div>
                     <div class="q-options">
@@ -43,22 +50,55 @@
                     </div>
                 </div>
                 {% endfor %}
-            {% else %}
-                <div class="question-card">
-                    <div class="q-title"><b>Q1.</b> What is the primary function of the Operating System Kernel?</div>
-                    <div class="q-options">
-                        <label class="q-option"><input type="radio" name="q1" value="A" required> <span>A) Compiling high-level programming source code</span></label>
-                        <label class="q-option"><input type="radio" name="q1" value="B"> <span>B) Managing hardware resources and mediating between software and CPU</span></label>
-                        <label class="q-option"><input type="radio" name="q1" value="C"> <span>C) Rendering 3D computer graphics on the monitor</span></label>
-                        <label class="q-option"><input type="radio" name="q1" value="D"> <span>D) Encrypting network traffic across the internet</span></label>
+            {% endif %}
+
+            <!-- SECTION B: Conceptual Writing & Descriptive Analysis -->
+            {% if subjective_questions and subjective_questions|length > 0 %}
+            <div class="exam-section-divider" style="margin-top: 2rem;">
+                <div class="section-title-badge badge-ai-section"><i class="fa-solid fa-pen-nib"></i> Section B: Technical Writing & Analysis (5 Marks)</div>
+                <p class="section-instruction">Provide a clear, in-depth explanation. Answer will be evaluated for technical correctness and conceptual depth.</p>
+            </div>
+
+                {% for sq in subjective_questions %}
+                <div class="question-card question-card-subjective">
+                    <div class="q-header">
+                        <span class="q-category-tag"><i class="fa-solid fa-brain"></i> {{ sq.category }}</span>
+                        <span class="q-marks-tag q-marks-high"><i class="fa-solid fa-award"></i> {{ sq.max_marks|int }} Marks</span>
+                    </div>
+                    <div class="q-title"><b>Q{{ questions|length + loop.index }}.</b> {{ sq.question }}</div>
+                    <div class="subjective-input-wrap">
+                        <textarea 
+                            name="{{ sq.id }}" 
+                            id="textarea-{{ sq.id }}" 
+                            class="subjective-textarea" 
+                            rows="6" 
+                            placeholder="Write your detailed explanation here..."
+                            required
+                            oninput="updateWordCount('{{ sq.id }}')"
+                        ></textarea>
+                        <div class="textarea-footer">
+                            <span class="word-counter" id="counter-{{ sq.id }}"><i class="fa-solid fa-font"></i> 0 words written</span>
+                            <span class="ai-eval-note"><i class="fa-solid fa-robot"></i> AI Evaluated</span>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             {% endif %}
 
             <div class="exam-submit-bar">
                 <button type="submit" class="btn-large btn-success"><i class="fa-solid fa-cloud-arrow-up"></i> Submit Final Assessment</button>
             </div>
         </form>
+
+        <script>
+        function updateWordCount(id) {
+            const el = document.getElementById('textarea-' + id);
+            const counter = document.getElementById('counter-' + id);
+            if (!el || !counter) return;
+            const words = el.value.trim().split(/\s+/).filter(w => w.length > 0);
+            counter.innerHTML = `<i class="fa-solid fa-font"></i> ${words.length} word${words.length === 1 ? '' : 's'} written`;
+        }
+        </script>
     </div>
 
     <!-- Right Column: Live Video Proctoring Stream & Real-time HUD -->

@@ -13,9 +13,14 @@ import config
 from backend.database import Database
 from backend.logger import ForensicLogger
 from backend.question_bank import generate_random_exam
+from backend.ai_evaluator import evaluate_subjective_answer
 from core.proctor_engine import ProctorEngine
 from webauthn_routes import bp as webauthn_bp
 from backend import webauthn_store
+
+
+
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(
@@ -167,16 +172,17 @@ def exam():
         flash('Please login to access the examination.', 'error')
         return redirect(url_for('login'))
 
-    # Generate a fresh randomized set of questions for this session
-    questions, answer_key = generate_random_exam(num_questions=4)
-    session['exam_questions'] = questions
+    # Generate a fresh randomized set of MCQs and Subjective Questions for this session
+    mcq_questions, answer_key, subjective_questions = generate_random_exam(num_mcq=3, num_subjective=1)
+    session['exam_questions'] = mcq_questions
     session['exam_answer_key'] = answer_key
+    session['subjective_questions'] = subjective_questions
     session['violation_history'] = []
     session['is_disqualified'] = False
     session['exam_score'] = 0
     engine.warning_count = 0
 
-    return render_template('exam.html', questions=questions)
+    return render_template('exam.html', questions=mcq_questions, subjective_questions=subjective_questions)
 
 
 @app.route('/video_feed')
@@ -193,16 +199,50 @@ def submit_exam():
     if 'user' not in session:
         return redirect(url_for('login'))
 
+    # 1. Grade Multiple Choice Questions
     answer_key = session.get('exam_answer_key', {})
-    score = 0
-    total_q = len(answer_key) if answer_key else 4
+    mcq_score = 0
+    total_mcq = len(answer_key) if answer_key else 3
 
     for q_id, correct_opt in answer_key.items():
         if request.form.get(q_id) == correct_opt:
-            score += 1
+            mcq_score += 1
 
-    session['exam_score'] = score
-    session['total_questions'] = total_q
+    # 2. Grade Subjective / Writing Questions via Gemini AI Evaluator
+    subjective_questions = session.get('subjective_questions', [])
+    subjective_evaluations = []
+    subjective_score = 0.0
+    total_subjective_marks = 0.0
+
+    for sq in subjective_questions:
+        sq_id = sq.get('id', 'sq1')
+        student_ans = request.form.get(sq_id, '').strip()
+        eval_result = evaluate_subjective_answer(
+            question_text=sq.get('question', ''),
+            rubric=sq.get('rubric', ''),
+            student_answer=student_ans,
+            max_marks=sq.get('max_marks', 5.0)
+        )
+        eval_result['id'] = sq_id
+        eval_result['question'] = sq.get('question', '')
+        eval_result['student_answer'] = student_ans
+        eval_result['category'] = sq.get('category', 'Technical Writing')
+        subjective_evaluations.append(eval_result)
+        subjective_score += eval_result['awarded_marks']
+        total_subjective_marks += eval_result['max_marks']
+
+    composite_score = round(mcq_score + subjective_score, 1)
+    max_composite_marks = round(total_mcq + total_subjective_marks, 1)
+    percentage = round((composite_score / max_composite_marks * 100), 1) if max_composite_marks > 0 else 0
+
+    session['exam_score'] = composite_score
+    session['total_questions'] = max_composite_marks
+    session['mcq_score'] = mcq_score
+    session['total_mcq'] = total_mcq
+    session['subjective_score'] = subjective_score
+    session['total_subjective_marks'] = total_subjective_marks
+    session['subjective_evaluations'] = subjective_evaluations
+    session['percentage'] = percentage
     session['total_violations'] = engine.warning_count
 
     return redirect(url_for('results'))
@@ -235,7 +275,7 @@ def disqualify_exam():
     if 'user' in session:
         session['is_disqualified'] = True
         session['exam_score'] = 0
-        session['total_questions'] = 4
+        session['total_questions'] = session.get('total_questions', 8.0)
         session['total_violations'] = engine.warning_count
         session['disqualification_reason'] = reason
 
@@ -256,12 +296,21 @@ def results():
     return render_template(
         'results.html',
         score=session.get('exam_score', 0),
-        total_questions=session.get('total_questions', 4),
+        total_questions=session.get('total_questions', 8),
+        mcq_score=session.get('mcq_score', 0),
+        total_mcq=session.get('total_mcq', 3),
+        subjective_score=session.get('subjective_score', 0),
+        total_subjective_marks=session.get('total_subjective_marks', 5.0),
+        subjective_evaluations=session.get('subjective_evaluations', []),
+        percentage=session.get('percentage', 0),
         total_violations=session.get('total_violations', engine.warning_count),
         is_disqualified=session.get('is_disqualified', False),
         disqualification_reason=session.get('disqualification_reason', ''),
         violations=session.get('violation_history', [])
     )
+
+
+
 
 @app.route('/download_log')
 def download_log():

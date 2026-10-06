@@ -39,7 +39,7 @@
         <!-- Metrics Grid -->
         <div class="results-metrics-grid">
             <div class="metric-card">
-                <span class="metric-label">Academic Score</span>
+                <span class="metric-label"><i class="fa-solid fa-graduation-cap"></i> Total Academic Score</span>
                 <span class="metric-value {% if is_disqualified %}text-danger{% else %}text-primary{% endif %}">
                     {{ score }} / {{ total_questions }}
                 </span>
@@ -47,13 +47,27 @@
                     {% if is_disqualified %}
                     0% (Voided due to Disqualification)
                     {% else %}
-                    {{ (score / total_questions * 100)|round|int }}% Total Score
+                    <b>{{ percentage or ((score / total_questions * 100)|round|int) }}%</b> Composite Score
                     {% endif %}
                 </span>
             </div>
 
             <div class="metric-card">
-                <span class="metric-label">Proctoring Verdict</span>
+                <span class="metric-label"><i class="fa-solid fa-chart-pie"></i> Section Breakdown</span>
+                <div class="section-breakdown-list">
+                    <div class="sec-score-item">
+                        <span>Section A (MCQs):</span>
+                        <b>{{ mcq_score or 0 }} / {{ total_mcq or 3 }}</b>
+                    </div>
+                    <div class="sec-score-item">
+                        <span>Section B (Descriptive):</span>
+                        <b>{{ subjective_score or 0 }} / {{ total_subjective_marks or 5.0 }}</b>
+                    </div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <span class="metric-label"><i class="fa-solid fa-shield-halved"></i> Proctoring Verdict</span>
                 <span class="metric-value {% if is_disqualified or total_violations >= 5 %}text-danger{% else %}text-success{% endif %}">
                     {% if is_disqualified or total_violations >= 5 %}DISQUALIFIED{% else %}VERIFIED CLEAN{% endif %}
                 </span>

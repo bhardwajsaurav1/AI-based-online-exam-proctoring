@@ -492,3 +492,279 @@
     gap: 8px;
     justify-content: center;
 }
+
+/* =========================================================
+   Section A & B Exam Layout & Subjective Question Styling
+   ========================================================= */
+.exam-section-divider {
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+}
+
+.section-title-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.badge-ai-section {
+    background: #faf5ff;
+    color: #7e22ce;
+    border-color: #e9d5ff;
+}
+
+.section-instruction {
+    font-size: 13px;
+    color: var(--text-muted, #64748b);
+    margin: 4px 0 0 4px;
+}
+
+.q-marks-tag {
+    font-size: 11px;
+    font-weight: 700;
+    background: #f1f5f9;
+    color: #475569;
+    padding: 3px 8px;
+    border-radius: 6px;
+}
+
+.q-marks-high {
+    background: #fdf4ff;
+    color: #a21caf;
+    border: 1px solid #f0abfc;
+}
+
+.question-card-subjective {
+    border-left: 4px solid #a855f7 !important;
+}
+
+.subjective-input-wrap {
+    margin-top: 12px;
+}
+
+.subjective-textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border-color, #cbd5e1);
+    background: var(--input-bg, #f8fafc);
+    color: var(--text-primary, #0f172a);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.subjective-textarea:focus {
+    outline: none;
+    border-color: #9333ea;
+    box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.15);
+    background: #ffffff;
+}
+
+.textarea-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 12px;
+}
+
+.word-counter {
+    color: #64748b;
+    font-weight: 600;
+}
+
+.ai-eval-note {
+    color: #7e22ce;
+    font-weight: 600;
+}
+
+/* =========================================================
+   AI Subjective Evaluation Results Styling
+   ========================================================= */
+.section-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.sec-score-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-primary, #1e293b);
+}
+
+.sec-score-item b {
+    color: #2563eb;
+}
+
+.ai-eval-section {
+    margin-top: 28px;
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: left;
+}
+
+.eval-section-title {
+    color: #6b21a8;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.eval-section-subtitle {
+    font-size: 13px;
+    color: #7e22ce;
+    margin-bottom: 16px;
+}
+
+.eval-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.eval-card {
+    background: #ffffff;
+    border: 1px solid #d8b4fe;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 6px rgba(147, 51, 234, 0.06);
+}
+
+.eval-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid #f3e8ff;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.eval-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    background: #f3e8ff;
+    color: #7e22ce;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+
+.eval-q-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.eval-score-pill {
+    background: #6b21a8;
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+.score-num {
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.score-pct {
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.candidate-answer-box {
+    background: #f8fafc;
+    border-left: 3px solid #94a3b8;
+    padding: 10px 14px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 12px;
+}
+
+.box-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.answer-text {
+    font-size: 13.5px;
+    color: #334155;
+    font-style: italic;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.ai-feedback-box {
+    background: #faf5ff;
+    border: 1px solid #e9d5ff;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.feedback-meta {
+    font-size: 12px;
+    color: #7e22ce;
+    margin-bottom: 6px;
+}
+
+.feedback-text {
+    font-size: 13.5px;
+    color: #3b0764;
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+}
+
+.rubric-points {
+    margin-top: 8px;
+    font-size: 12.5px;
+}
+
+.points-label {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.rubric-points ul {
+    margin: 0;
+    padding-left: 20px;
+    color: #475569;
+}
+
+.rubric-points li {
+    margin-bottom: 2px;
+}
+
