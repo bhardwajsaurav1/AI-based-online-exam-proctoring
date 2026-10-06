@@ -335,21 +335,6 @@
     </div>
   </div>
 
-  <!-- ══ WHY NO WEBCAM ══ -->
-  <div class="info-amber sec-card" style="margin-bottom:18px;">
-    <p class="sec-card-title" style="margin-bottom:6px;">
-      <i class="fa-solid fa-circle-question" style="color:var(--bio-amber);"></i>
-      Why can't I use my webcam for face scan?
-    </p>
-    <p style="font-size:12.5px; color:#78350f; line-height:1.6; margin:0;">
-      WebAuthn is a <strong>cryptographic standard</strong> — it doesn't process images at all.
-      Biometric verification happens inside your device's <em>Secure Enclave / TPM chip</em>, and
-      the browser only receives a signed key — no camera access. Laptops with
-      <strong>Windows Hello IR cameras</strong> (Surface, ThinkPad X1, Dell XPS) work automatically.
-      Regular RGB webcams lack the anti-spoofing hardware that FIDO2 requires.
-      <strong>Using your phone via QR code is the official FIDO2 solution for standard laptops.</strong>
-    </p>
-  </div>
 
   <!-- ══ ENROLLED DEVICES ══ -->
   <div class="sec-card">
@@ -458,48 +443,6 @@
     <div id="wa-hint"></div>
   </div>
 
-  <!-- ══ PHONE STEP-BY-STEP ══ -->
-  <div class="sec-card">
-    <p class="sec-card-title"><i class="fa-solid fa-mobile-screen-button"></i> Detailed Phone Setup Guide</p>
-    <p class="sec-card-desc">No fingerprint sensor on your laptop? Here's the complete walkthrough:</p>
-    <ul class="steps-list">
-      <li class="step-item">
-        <span class="step-num">1</span>
-        <div class="step-text">
-          <strong>Type a name above, e.g. "My Android"</strong>
-          <span>This helps you identify the device in the Enrolled Devices list.</span>
-        </div>
-      </li>
-      <li class="step-item">
-        <span class="step-num">2</span>
-        <div class="step-text">
-          <strong>Click "Use My Phone / QR" button</strong>
-          <span>If a Windows Security dialog appears asking for a USB security key, click <strong>"Change"</strong> at the bottom right, then select <strong>"iPhone, iPad, or Android device"</strong>.</span>
-        </div>
-      </li>
-      <li class="step-item">
-        <span class="step-num">3</span>
-        <div class="step-text">
-          <strong>A QR code appears on your screen</strong>
-          <span>Open your phone's default Camera app (not a QR scanner app) and point it at the QR code. Tap the notification that pops up.</span>
-        </div>
-      </li>
-      <li class="step-item">
-        <span class="step-num">4</span>
-        <div class="step-text">
-          <strong>Approve on your phone</strong>
-          <span>Your phone will prompt Face ID, fingerprint, or screen lock. Approve it — the laptop will confirm enrollment automatically.</span>
-        </div>
-      </li>
-      <li class="step-item">
-        <span class="step-num">5</span>
-        <div class="step-text">
-          <strong>Done! Your phone is now your 2nd factor</strong>
-          <span>Every time you log in with your password, the site will prompt you to verify on your phone.</span>
-        </div>
-      </li>
-    </ul>
-  </div>
 
   <!-- ══ PRIVACY ══ -->
   <div class="privacy-note">

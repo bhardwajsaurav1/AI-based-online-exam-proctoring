@@ -17,7 +17,7 @@
             <nav class="nav-links">
                 <a href="/"><i class="fa-solid fa-house"></i> Home</a>
                 {% if session.get('user') %}
-                    <a href="/exam"><i class="fa-solid fa-pen-to-square"></i> Exam Portal</a>
+                    <a href="/precheck"><i class="fa-solid fa-pen-to-square"></i> Exam Portal</a>
                     <a href="/webauthn/security"><i class="fa-solid fa-fingerprint"></i> Security</a>
                     <span class="user-badge"><i class="fa-solid fa-user"></i> {{ session['user']['username'] }}</span>
                     <a href="/logout" class="btn-secondary"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>

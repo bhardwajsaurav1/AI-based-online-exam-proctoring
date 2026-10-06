@@ -153,6 +153,14 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('index'))
 
+@app.route('/precheck')
+def precheck():
+    """Pre-exam system check page — mic, cam, fullscreen, screen-share, AI warm-up."""
+    if 'user' not in session:
+        flash('Please login to access the examination.', 'error')
+        return redirect(url_for('login'))
+    return render_template('precheck.html')
+
 @app.route('/exam')
 def exam():
     if 'user' not in session:
@@ -169,6 +177,7 @@ def exam():
     engine.warning_count = 0
 
     return render_template('exam.html', questions=questions)
+
 
 @app.route('/video_feed')
 def video_feed():

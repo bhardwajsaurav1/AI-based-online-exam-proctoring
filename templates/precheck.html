@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block title %}Pre-Exam System Check - AI Proctor{% endblock %}
+
+{% block extra_css %}
+<style>
+  .precheck-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0c1a35 100%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px 16px;
+  }
+  .precheck-card {
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 24px; width: 100%; max-width: 680px;
+    overflow: hidden; box-shadow: 0 32px 80px rgba(0,0,0,.5);
+  }
+  .precheck-header {
+    padding: 32px 36px 28px;
+    background: linear-gradient(135deg, rgba(37,99,235,.25), rgba(124,58,237,.2));
+    border-bottom: 1px solid rgba(255,255,255,.08); text-align: center;
+  }
+  .precheck-header-icon {
+    width: 68px; height: 68px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    font-size: 30px; color: #fff; margin: 0 auto 18px;
+    box-shadow: 0 8px 24px rgba(37,99,235,.4);
+  }
+  .precheck-header h1 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .precheck-header p  { font-size: 13.5px; color: rgba(255,255,255,.65); line-height: 1.55; }
+  .progress-track { height: 4px; background: rgba(255,255,255,.08); }
+  .progress-fill  { height: 100%; background: linear-gradient(90deg,#2563eb,#7c3aed); transition: width .5s ease; width: 0%; }
+  .precheck-body  { padding: 28px 36px 32px; }
+  .steps-grid     { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+  .step-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 18px; background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px; transition: border-color .3s, background .3s; flex-wrap: wrap;
+  }
+  .step-row.state-active { background: rgba(37,99,235,.12); border-color: rgba(37,99,235,.4); }
+  .step-row.state-pass   { background: rgba(22,163,74,.08);  border-color: rgba(22,163,74,.35); }
+  .step-row.state-fail   { background: rgba(220,38,38,.08);  border-color: rgba(220,38,38,.35); }
+  .step-icon-wrap {
+    width: 46px; height: 46px; flex-shrink: 0; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    background: rgba(255,255,255,.07); color: rgba(255,255,255,.5); transition: background .3s, color .3s;
+  }
+  .state-active .step-icon-wrap { background: rgba(37,99,235,.25); color: #60a5fa; }
+  .state-pass   .step-icon-wrap { background: rgba(22,163,74,.2);  color: #4ade80; }
+  .state-fail   .step-icon-wrap { background: rgba(220,38,38,.2);  color: #f87171; }
+  .step-info  { flex: 1; min-width: 0; }
+  .step-title { font-size: 14px; font-weight: 700; color: rgba(255,255,255,.85); margin-bottom: 2px; }
+  .step-sub   { font-size: 12px; color: rgba(255,255,255,.45); line-height: 1.4; }
+  .step-badge {
+    flex-shrink: 0; min-width: 90px; padding: 5px 12px;
+    border-radius: 9999px; font-size: 12px; font-weight: 700; text-align: center;
+    background: rgba(255,255,255,.07); color: rgba(255,255,255,.4); transition: background .3s, color .3s;
+  }
+  .state-active .step-badge {
+    background: rgba(37,99,235,.25); color: #93c5fd;
+    animation: pulse-badge 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse-badge { 0%,100%{opacity:1}50%{opacity:.5} }
+  .state-pass .step-badge { background: rgba(22,163,74,.2);  color: #86efac; }
+  .state-fail .step-badge { background: rgba(220,38,38,.2);  color: #fca5a5; }
+  .cam-preview-wrap { display: none; width: 100%; margin-top: 10px; }
+  .cam-preview-wrap.visible { display: block; }
+  #cam-preview { width: 100%; max-height: 160px; border-radius: 10px; object-fit: cover; display: block; }
+  .tip-box {
+    background: rgba(250,204,21,.07); border: 1px solid rgba(250,204,21,.2);
+    border-radius: 10px; padding: 12px 16px; font-size: 12.5px; color: rgba(250,204,21,.8);
+    line-height: 1.55; margin-bottom: 20px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  .tip-box i { flex-shrink: 0; margin-top: 1px; }
+  .precheck-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .status-summary { font-size: 13px; color: rgba(255,255,255,.5); display: flex; align-items: center; gap: 8px; }
+  #btn-start-exam {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 13px 28px; font-size: 15px; font-weight: 800; color: #fff;
+    background: linear-gradient(135deg,#2563eb,#7c3aed); border: none;
+    border-radius: 12px; cursor: pointer;
+    transition: opacity .2s, transform .15s, box-shadow .2s;
+    box-shadow: 0 8px 24px rgba(37,99,235,.35);
+  }
+  #btn-start-exam:hover:not(:disabled) { opacity:.92; transform:translateY(-2px); }
+  #btn-start-exam:disabled { opacity:.35; cursor:not-allowed; transform:none; box-shadow:none; }
+  #entering-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #0f172a; z-index: 9999;
+    flex-direction: column; align-items: center; justify-content: center; gap: 20px; color: #fff;
+  }
+  #entering-overlay.active { display: flex; }
+  .entering-spinner {
+    width: 56px; height: 56px;
+    border: 4px solid rgba(255,255,255,.1); border-top-color: #2563eb;
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .entering-text { font-size: 18px; font-weight: 700; color: rgba(255,255,255,.85); }
+  .entering-sub  { font-size: 13px; color: rgba(255,255,255,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="precheck-page">
+  <div class="precheck-card">
+
+    <div class="precheck-header">
+      <div class="precheck-header-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <h1>Pre-Exam System Check</h1>
+      <p>We need to verify your microphone, camera, and environment<br>are ready before your exam begins.</p>
+    </div>
+
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+
+    <div class="precheck-body">
+
+      <div class="tip-box">
+        <i class="fa-solid fa-lightbulb"></i>
+        <span>Allow all browser permission prompts. The AI proctoring engine loads in the background during these checks so the exam opens instantly once you are ready.</span>
+      </div>
+
+      <div class="steps-grid">
+
+        <div class="step-row state-idle" id="step-mic">
+          <div class="step-icon-wrap"><i class="fa-solid fa-microphone"></i></div>
+          <div class="step-info">
+            <div class="step-title">Microphone Access</div>
+            <div class="step-sub" id="mic-sub">Waiting…</div>
+          </div>
+          <div class="step-badge" id="mic-badge">Waiting</div>
+        </div>
+
+        <div class="step-row state-idle" id="step-cam">
+          <div class="step-icon-wrap"><i class="fa-solid fa-video"></i></div>
+          <div class="step-info">
+            <div class="step-title">Camera Access</div>
+            <div class="step-sub" id="cam-sub">Waiting…</div>
+            <div class="cam-preview-wrap" id="cam-preview-wrap">
+              <video id="cam-preview" autoplay muted playsinline></video>
+            </div>
+          </div>
+          <div class="step-badge" id="cam-badge">Waiting</div>
+        </div>
+
+        <div class="step-row state-idle" id="step-fullscreen">
+          <div class="step-icon-wrap"><i class="fa-solid fa-expand"></i></div>
+          <div class="step-info">
+            <div class="step-title">Fullscreen Mode</div>
+            <div class="step-sub" id="fs-sub">The exam must run in fullscreen to prevent tab switching.</div>
+          </div>
+          <div class="step-badge" id="fs-badge">Waiting</div>
+        </div>
+
+        <div class="step-row state-idle" id="step-screen">
+          <div class="step-icon-wrap"><i class="fa-solid fa-display"></i></div>
+          <div class="step-info">
+            <div class="step-title">Screen Sharing</div>
+            <div class="step-sub" id="screen-sub">Share your full screen so the proctor can monitor activity.</div>
+          </div>
+          <div class="step-badge" id="screen-badge">Waiting</div>
+        </div>
+
+        <div class="step-row state-idle" id="step-ai">
+          <div class="step-icon-wrap"><i class="fa-solid fa-brain"></i></div>
+          <div class="step-info">
+            <div class="step-title">AI Proctoring Engine</div>
+            <div class="step-sub" id="ai-sub">Loading neural face detection model in the background…</div>
+          </div>
+          <div class="step-badge" id="ai-badge">Waiting</div>
+        </div>
+
+      </div>
+
+      <div class="precheck-footer">
+        <div class="status-summary" id="status-summary">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> Running checks…
+        </div>
+        <button id="btn-start-exam" disabled>
+          <i class="fa-solid fa-play"></i> Enter Exam
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="entering-overlay">
+  <div class="entering-spinner"></div>
+  <div class="entering-text">Launching Exam Session</div>
+  <div class="entering-sub">Setting up your proctored environment…</div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const TOTAL = 5;
+  let camStream = null, screenStream = null;
+  const results = {};
+
+  const BADGE_IDS = { mic:'mic-badge', cam:'cam-badge', fullscreen:'fs-badge', screen:'screen-badge', ai:'ai-badge' };
+  const SUB_IDS   = { mic:'mic-sub',   cam:'cam-sub',   fullscreen:'fs-sub',   screen:'screen-sub',   ai:'ai-sub'   };
+
+  function setStep(id, state, badge, sub) {
+    const row = $('step-' + id);
+    if (row) row.className = 'step-row state-' + state;
+    if (BADGE_IDS[id] && $(BADGE_IDS[id])) $(BADGE_IDS[id]).textContent = badge;
+    if (sub && SUB_IDS[id] && $(SUB_IDS[id]))  $(SUB_IDS[id]).textContent  = sub;
+  }
+
+  function tick() {
+    const done = Object.values(results).length;
+    $('progress-fill').style.width = ((done / TOTAL) * 100) + '%';
+  }
+
+  function finalise() {
+    const allPass = Object.values(results).every(v => v === true);
+    if (allPass) {
+      $('btn-start-exam').disabled = false;
+      $('status-summary').innerHTML = '<i class="fa-solid fa-circle-check" style="color:#4ade80;"></i>&nbsp;All systems ready — you can begin!';
+    } else {
+      const failed = Object.entries(results).filter(([,v]) => !v).map(([k]) => k).join(', ');
+      $('status-summary').innerHTML = '<i class="fa-solid fa-circle-xmark" style="color:#f87171;"></i>&nbsp;Failed: ' + failed + '. Fix the issues and refresh.';
+    }
+  }
+
+  async function checkMic() {
+    setStep('mic','active','Checking…','Requesting microphone access — click Allow when prompted.');
+    try {
+      const s = await navigator.mediaDevices.getUserMedia({ audio:true });
+      s.getTracks().forEach(t=>t.stop());
+      results.mic = true;
+      setStep('mic','pass','Ready ✓','Microphone detected and working.');
+    } catch {
+      results.mic = false;
+      setStep('mic','fail','Denied','Microphone blocked. Allow mic access in browser settings.');
+    }
+    tick();
+  }
+
+  async function checkCam() {
+    setStep('cam','active','Checking…','Requesting camera access — click Allow when prompted.');
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video:{ width:640, height:480 } });
+      $('cam-preview').srcObject = camStream;
+      $('cam-preview-wrap').classList.add('visible');
+      results.cam = true;
+      setStep('cam','pass','Ready ✓','Camera active — you should see yourself above.');
+    } catch {
+      results.cam = false;
+      setStep('cam','fail','Denied','Camera blocked. Allow camera access in browser settings.');
+    }
+    tick();
+  }
+
+  async function checkFullscreen() {
+    setStep('fullscreen','active','Requesting…','Entering fullscreen — accept the browser prompt.');
+    try {
+      if (!document.fullscreenElement)
+        await document.documentElement.requestFullscreen();
+      await new Promise(r => setTimeout(r, 700));
+      if (document.fullscreenElement) {
+        results.fullscreen = true;
+        setStep('fullscreen','pass','Active ✓','Fullscreen is active.');
+      } else { throw new Error('not granted'); }
+    } catch {
+      results.fullscreen = false;
+      setStep('fullscreen','fail','Denied','Please allow fullscreen or press F11 and retry.');
+    }
+    tick();
+  }
+
+  async function checkScreen() {
+    setStep('screen','active','Requesting…','Select your ENTIRE SCREEN (not a window) in the dialog.');
+    try {
+      screenStream = await navigator.mediaDevices.getDisplayMedia({ video:{ displaySurface:'monitor' }, audio:false });
+      results.screen = true;
+      setStep('screen','pass','Sharing ✓','Screen is being shared with the proctor.');
+    } catch {
+      results.screen = false;
+      setStep('screen','fail','Declined','Screen share declined. This is required by exam policy.');
+    }
+    tick();
+  }
+
+  function loadScript(src) {
+    return new Promise((res, rej) => {
+      if (document.querySelector('script[src="'+src+'"]')) { res(); return; }
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  async function checkAI() {
+    setStep('ai','active','Loading…','Downloading AI model (~10-20s on first load)…');
+    try {
+      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js');
+      setStep('ai','active','Warming up…','Initialising neural network…');
+      await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js');
+      const model = await window.blazeface.load();
+      const dummy = tf.zeros([1,128,128,3]);
+      await model.estimateFaces(dummy, false);
+      dummy.dispose();
+      window.__precheckedBlazefaceModel = model;
+      results.ai = true;
+      setStep('ai','pass','Ready ✓','AI model loaded and warmed up — instant detection during exam.');
+    } catch(e) {
+      results.ai = false;
+      setStep('ai','fail','Failed','Could not load AI model. Check internet connection.');
+    }
+    tick();
+  }
+
+  async function runChecks() {
+    await checkMic();
+    await checkCam();
+    await checkFullscreen();
+    await checkScreen();
+    await checkAI();
+    finalise();
+  }
+
+  $('btn-start-exam').addEventListener('click', function() {
+    if (camStream)    camStream.getTracks().forEach(t=>t.stop());
+    if (screenStream) screenStream.getTracks().forEach(t=>t.stop());
+    $('entering-overlay').classList.add('active');
+    setTimeout(function(){ window.location.href = '/exam'; }, 700);
+  });
+
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(runChecks, 350);
+  });
+})();
+</script>
+{% endblock %}
