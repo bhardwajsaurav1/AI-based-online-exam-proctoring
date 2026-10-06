@@ -226,7 +226,12 @@
       $('status-summary').innerHTML = '<i class="fa-solid fa-circle-check" style="color:#4ade80;"></i>&nbsp;All systems ready — you can begin!';
     } else {
       const failed = Object.entries(results).filter(([,v]) => !v).map(([k]) => k).join(', ');
-      $('status-summary').innerHTML = '<i class="fa-solid fa-circle-xmark" style="color:#f87171;"></i>&nbsp;Failed: ' + failed + '. Fix the issues and refresh.';
+      // If only checking stopped for user action, don't show red error yet
+      if (failed) {
+        $('status-summary').innerHTML = '<i class="fa-solid fa-circle-xmark" style="color:#f87171;"></i>&nbsp;Failed: ' + failed + '. Fix the issues and refresh.';
+      } else {
+        $('status-summary').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>&nbsp;Waiting for input...';
+      }
     }
   }
 
@@ -260,20 +265,36 @@
   }
 
   async function checkFullscreen() {
-    setStep('fullscreen','active','Requesting…','Entering fullscreen — accept the browser prompt.');
-    try {
-      if (!document.fullscreenElement)
-        await document.documentElement.requestFullscreen();
-      await new Promise(r => setTimeout(r, 700));
-      if (document.fullscreenElement) {
-        results.fullscreen = true;
-        setStep('fullscreen','pass','Active ✓','Fullscreen is active.');
-      } else { throw new Error('not granted'); }
-    } catch {
-      results.fullscreen = false;
-      setStep('fullscreen','fail','Denied','Please allow fullscreen or press F11 and retry.');
+    setStep('fullscreen','active','Checking…','Checking window size...');
+    // If the browser is effectively covering the whole screen, we count it as fullscreen
+    if (document.fullscreenElement || window.innerHeight >= screen.height - 20) {
+      results.fullscreen = true;
+      setStep('fullscreen','pass','Active ✓','Fullscreen is active.');
+      tick();
+      return;
     }
-    tick();
+
+    // Otherwise, we need a user gesture to enter fullscreen
+    setStep('fullscreen','active','Action Required','');
+    $('fs-sub').innerHTML = 'The exam requires fullscreen. <button id="btn-fs" style="padding: 4px 8px; margin-left: 8px; cursor: pointer; background: #2563eb; color: #fff; border: none; border-radius: 4px;">Click to Enter Fullscreen</button>';
+    
+    return new Promise(resolve => {
+      $('btn-fs').addEventListener('click', async () => {
+        try {
+          await document.documentElement.requestFullscreen();
+          await new Promise(r => setTimeout(r, 700));
+          if (document.fullscreenElement) {
+            results.fullscreen = true;
+            setStep('fullscreen','pass','Active ✓','Fullscreen is active.');
+          } else { throw new Error('not granted'); }
+        } catch {
+          results.fullscreen = false;
+          setStep('fullscreen','fail','Denied','Fullscreen denied. Press F11 manually and refresh.');
+        }
+        tick();
+        resolve();
+      });
+    });
   }
 
   async function checkScreen() {
@@ -312,8 +333,11 @@
       results.ai = true;
       setStep('ai','pass','Ready ✓','AI model loaded and warmed up — instant detection during exam.');
     } catch(e) {
-      results.ai = false;
-      setStep('ai','fail','Failed','Could not load AI model. Check internet connection.');
+      // Soft fail - don't block the exam, it will retry inside the exam portal
+      results.ai = true; 
+      setStep('ai','active','Skipped','Could not preload AI model. It will load during the exam instead.');
+      $('ai-badge').style.background = 'rgba(250,204,21,.2)';
+      $('ai-badge').style.color = '#fde047';
     }
     tick();
   }
@@ -321,7 +345,8 @@
   async function runChecks() {
     await checkMic();
     await checkCam();
-    await checkFullscreen();
+    // Wait for fullscreen if it needs manual click
+    await checkFullscreen(); 
     await checkScreen();
     await checkAI();
     finalise();
