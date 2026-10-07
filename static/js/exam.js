@@ -400,21 +400,26 @@ document.addEventListener("DOMContentLoaded", async () => {
         ctx.stroke();
 
         // 1. Draw Real Face Bounding Box & Facial Keypoints
-        faceBoxes.forEach(fb => {
-            const isSingleCenteredFace = faceInsideBox && faceBoxes.length === 1 && headPoseState === "Forward";
-            ctx.strokeStyle = isCalibrating ? "#38bdf8" : (isSingleCenteredFace ? "#10b981" : "#ef4444");
-            ctx.lineWidth = 2.5;
+        const isMultiplePersons = faceBoxes.length >= 2;
+        faceBoxes.forEach((fb, idx) => {
+            const isSingleCenteredFace = !isMultiplePersons && faceInsideBox && faceBoxes.length === 1 && headPoseState === "Forward";
+            ctx.strokeStyle = isCalibrating ? "#38bdf8" : (isMultiplePersons ? "#ef4444" : (isSingleCenteredFace ? "#10b981" : "#f59e0b"));
+            ctx.lineWidth = isMultiplePersons ? 3.5 : 2.5;
             ctx.strokeRect(fb.x, fb.y, fb.width, fb.height);
 
             // Label
             ctx.fillStyle = ctx.strokeStyle;
-            ctx.font = "bold 11px sans-serif";
-            const labelText = isCalibrating ? "CALIBRATING FACE" : (isSingleCenteredFace ? "FACE CENTERED" : "OUT OF BOUNDS");
+            ctx.font = "bold 12px sans-serif";
+            const labelText = isCalibrating 
+                ? "CALIBRATING FACE" 
+                : (isMultiplePersons 
+                    ? `⚠️ CONCERN: PERSON ${idx + 1} DETECTED` 
+                    : (isSingleCenteredFace ? "FACE CENTERED" : "OUT OF BOUNDS"));
             ctx.fillText(labelText, fb.x + 4, fb.y - 6);
 
             // Draw facial keypoints (eyes, nose, mouth)
             if (fb.landmarks) {
-                ctx.fillStyle = "#38bdf8";
+                ctx.fillStyle = isMultiplePersons ? "#ef4444" : "#38bdf8";
                 fb.landmarks.forEach(pt => {
                     const mirPtX = w - pt[0];
                     ctx.beginPath();
@@ -442,7 +447,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             if (!faceDetected || !faceInsideBox || faceBoxes.length > 1 || headPoseState !== "Forward") {
                 faceViolationFrames++;
 
-                if (!faceDetected) {
+                if (faceBoxes.length >= 2) {
+                    if (teleFace) {
+                        teleFace.textContent = `🚨 Concern: ${faceBoxes.length} Persons Detected`;
+                        teleFace.className = "badge-status badge-danger";
+                    }
+                    if (telePose) {
+                        telePose.textContent = "Multiple People in View";
+                        telePose.className = "badge-status badge-warn";
+                    }
+                } else if (!faceDetected) {
                     if (teleFace) {
                         teleFace.textContent = "No Face Detected";
                         teleFace.className = "badge-status badge-warn";
@@ -460,11 +474,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                         telePose.textContent = "Offset / Out of Bounds";
                         telePose.className = "badge-status badge-warn";
                     }
-                } else if (faceBoxes.length > 1) {
-                    if (teleFace) {
-                        teleFace.textContent = "Multiple People Detected";
-                        teleFace.className = "badge-status badge-warn";
-                    }
                 } else if (headPoseState !== "Forward") {
                     if (telePose) {
                         telePose.textContent = headPoseState;
@@ -476,15 +485,16 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
 
-                // If face is out of bounds or absent for ~1.8s (15 frames) and cooldown expired
-                if (faceViolationFrames > 15 && violationCooldown === 0) {
-                    violationCooldown = 30; // 3-second cooldown
-                    const msg = !faceDetected 
-                        ? "Face Absent from Camera View" 
-                        : (faceBoxes.length > 1 
-                            ? "Multiple People in Camera Frame" 
+                // Trigger concern faster (5 frames ~ 400ms) for multiple persons, or 15 frames for gaze/position
+                const requiredFrames = faceBoxes.length >= 2 ? 5 : 15;
+                if (faceViolationFrames >= requiredFrames && violationCooldown === 0) {
+                    violationCooldown = 25; // cooldown
+                    const msg = faceBoxes.length >= 2
+                        ? `CONCERN RAISED: Multiple Persons in Frame (${faceBoxes.length} People Present)`
+                        : (!faceDetected 
+                            ? "Face Absent from Camera View" 
                             : (headPoseState !== "Forward" ? `Looking Away (${headPoseState})` : "Face Moved Outside Examination Window"));
-                    triggerViolation(msg);
+                    triggerViolation(msg, `Detected ${faceBoxes.length} faces in frame`);
                 }
             } else {
                 faceViolationFrames = 0;

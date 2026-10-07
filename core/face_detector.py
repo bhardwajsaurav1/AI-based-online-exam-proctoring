@@ -51,7 +51,7 @@ class FaceDetector:
             status = "Face detecting properly."
             is_anomaly = False
         else:
-            status = "Multiple faces has been detected."
+            status = f"CONCERN RAISED: Multiple persons detected ({face_count} faces in frame)."
             is_anomaly = True
 
         return {

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Updated Methodology & Architecture Flowchart</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    width: 210mm;
+    min-height: 297mm;
+    background-color: #ffffff;
+    font-family: 'Times New Roman', Times, serif, "Cambria", sans-serif;
+    color: #111111;
+    padding: 10mm 12mm 8mm 12mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #0f172a;
+    margin-bottom: 3px;
+    text-align: left;
+    font-family: "Times New Roman", Georgia, serif;
+    letter-spacing: -0.2px;
+  }
+  .header-subtitle {
+    font-size: 11.5px;
+    color: #475569;
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+  .diagram-container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    max-height: 268mm;
+  }
+  .caption {
+    font-size: 11px;
+    font-style: italic;
+    color: #334155;
+    text-align: center;
+    margin-top: 4px;
+    font-family: 'Times New Roman', Times, serif;
+  }
+</style>
+</head>
+<body>
+
+  <div>
+    <div class="header-title">Updated System Methodology &amp; Architecture Flowchart</div>
+    <div class="header-subtitle">AI-Based Online Exam Proctoring System with Multi-Modal Vision, Biometric WebAuthn MFA &amp; Gemini AI Evaluation</div>
+  </div>
+
+  <div class="diagram-container">
+    <svg viewBox="0 0 920 1560" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Standard Arrow Marker -->
+        <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#1e293b" />
+        </marker>
+        <!-- Blue Arrow Marker -->
+        <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#1d4ed8" />
+        </marker>
+        <!-- Purple Arrow Marker -->
+        <marker id="arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#6b21a8" />
+        </marker>
+        <!-- Soft Drop Shadow -->
+        <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%" filterUnits="userSpaceOnUse">
+          <feDropShadow dx="1" dy="2" stdDeviation="1.5" flood-color="#000000" flood-opacity="0.08" />
+        </filter>
+      </defs>
+
+      <!-- STYLES -->
+      <style>
+        .node-oval { fill: #ffffff; stroke: #0f172a; stroke-width: 1.8; filter: url(#shadow); rx: 20; ry: 20; }
+        .node-rect { fill: #ffffff; stroke: #0f172a; stroke-width: 1.8; filter: url(#shadow); rx: 7; ry: 7; }
+        .node-rect-accent { fill: #f8fafc; stroke: #1d4ed8; stroke-width: 1.8; filter: url(#shadow); rx: 7; ry: 7; }
+        .node-rect-ai { fill: #faf5ff; stroke: #7e22ce; stroke-width: 1.8; filter: url(#shadow); rx: 7; ry: 7; }
+        .node-submodule { fill: #ffffff; stroke: #2563eb; stroke-width: 1.3; rx: 6; ry: 6; }
+        .node-submodule-ai { fill: #ffffff; stroke: #9333ea; stroke-width: 1.3; rx: 6; ry: 6; }
+        .node-diamond { fill: #ffffff; stroke: #0f172a; stroke-width: 1.8; filter: url(#shadow); }
+        .node-cyl { fill: #ffffff; stroke: #0f172a; stroke-width: 1.8; filter: url(#shadow); }
+        .node-output { fill: #f0fdf4; stroke: #166534; stroke-width: 1.8; filter: url(#shadow); rx: 7; ry: 7; }
+        .node-alert { fill: #fef2f2; stroke: #b91c1c; stroke-width: 1.8; filter: url(#shadow); rx: 7; ry: 7; }
+        
+        .line { stroke: #1e293b; stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+        .line-dashed { stroke: #64748b; stroke-width: 1.4; stroke-dasharray: 4,4; fill: none; marker-end: url(#arrow); }
+        .line-blue { stroke: #1d4ed8; stroke-width: 1.6; fill: none; marker-end: url(#arrow-blue); }
+        .line-purple { stroke: #7e22ce; stroke-width: 1.6; fill: none; marker-end: url(#arrow-purple); }
+
+        .txt-title { font-family: 'Times New Roman', Georgia, serif; font-size: 14.5px; font-weight: bold; fill: #0f172a; text-anchor: middle; }
+        .txt-main { font-family: 'Times New Roman', Georgia, serif; font-size: 12.5px; fill: #1e293b; text-anchor: middle; }
+        .txt-sub { font-family: 'Times New Roman', Georgia, serif; font-size: 11px; fill: #475569; text-anchor: middle; }
+        .txt-cond { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; font-style: italic; font-weight: bold; fill: #1d4ed8; }
+        .txt-alert { font-family: 'Times New Roman', Georgia, serif; font-size: 12.5px; font-weight: bold; fill: #991b1b; text-anchor: middle; }
+        
+        .group-box { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1.3; stroke-dasharray: 5,4; rx: 8; ry: 8; }
+        .group-box-ai { fill: #fdf4ff; stroke: #c084fc; stroke-width: 1.3; stroke-dasharray: 5,4; rx: 8; ry: 8; }
+        .group-lbl { font-family: 'Times New Roman', Georgia, serif; font-size: 12.5px; font-weight: bold; fill: #1e293b; }
+        .group-lbl-ai { font-family: 'Times New Roman', Georgia, serif; font-size: 12.5px; font-weight: bold; fill: #6b21a8; }
+      </style>
+
+      <!-- 1. START NODE -->
+      <rect x="385" y="15" width="150" height="38" class="node-oval" />
+      <text x="460" y="39" class="txt-title">Start</text>
+
+      <!-- Flow: Start -> Login -->
+      <path d="M 460 53 L 460 78" class="line" />
+
+      <!-- 2. USER AUTHENTICATION & WEBAUTHN MFA -->
+      <rect x="300" y="78" width="320" height="52" class="node-rect" />
+      <text x="460" y="98" class="txt-title">Candidate Authentication &amp; MFA</text>
+      <text x="460" y="117" class="txt-sub">Username, Password &amp; WebAuthn Biometric Passkey</text>
+
+      <!-- Flow: Login -> Auth Diamond -->
+      <path d="M 460 130 L 460 156" class="line" />
+
+      <!-- 3. AUTH DECISION DIAMOND -->
+      <polygon points="460,156 555,193 460,230 365,193" class="node-diamond" />
+      <text x="460" y="189" class="txt-title">Credentials</text>
+      <text x="460" y="204" class="txt-title">Valid?</text>
+
+      <!-- Auth No Branch -> Show Error -> Back to Login -->
+      <path d="M 365 193 L 210 193 L 210 104 L 298 104" class="line" />
+      <text x="280" y="186" class="txt-cond">No</text>
+      <rect x="155" y="135" width="110" height="34" class="node-rect" style="stroke:#dc2626;" />
+      <text x="210" y="156" class="txt-sub" style="fill:#dc2626; font-weight:bold;">Display Error</text>
+
+      <!-- Database Side Connection -->
+      <path d="M 555 193 L 710 193 L 710 138" class="line" />
+      <!-- Database Cylinder -->
+      <g transform="translate(645, 70)">
+        <path d="M 0 14 C 0 4, 130 4, 130 14 L 130 54 C 130 64, 0 64, 0 54 Z" class="node-cyl" />
+        <ellipse cx="65" cy="14" rx="65" ry="10" class="node-cyl" />
+        <text x="65" y="38" class="txt-title" style="font-size:13.5px;">User Database</text>
+        <text x="65" y="52" class="txt-sub">SQLite / MySQL DB</text>
+      </g>
+
+      <!-- Auth Yes Branch -> Precheck Diagnostics -->
+      <path d="M 460 230 L 460 258" class="line" />
+      <text x="468" y="247" class="txt-cond">Yes</text>
+
+      <!-- 4. PRE-CHECK HARDWARE DIAGNOSTICS -->
+      <rect x="290" y="258" width="340" height="50" class="node-rect-accent" />
+      <text x="460" y="278" class="txt-title" style="fill:#1d4ed8;">Pre-Exam System &amp; Hardware Diagnostics</text>
+      <text x="460" y="296" class="txt-sub">Camera Feed, Microphone, Network Latency &amp; Speed</text>
+
+      <!-- Flow: Precheck -> Precheck Diamond -->
+      <path d="M 460 308 L 460 334" class="line" />
+
+      <!-- 5. PRECHECK DECISION DIAMOND -->
+      <polygon points="460,334 550,369 460,404 370,369" class="node-diamond" />
+      <text x="460" y="365" class="txt-title">Hardware</text>
+      <text x="460" y="380" class="txt-title">Passed?</text>
+
+      <!-- Precheck No Branch -> Fix Prompt -> Back -->
+      <path d="M 370 369 L 210 369 L 210 283 L 288 283" class="line" />
+      <text x="280" y="362" class="txt-cond">No</text>
+      <rect x="145" y="312" width="130" height="34" class="node-rect" style="stroke:#ea580c;" />
+      <text x="210" y="333" class="txt-sub" style="fill:#ea580c; font-weight:bold;">Prompt Device Fix</text>
+
+      <!-- Precheck Yes Branch -> Dynamic AI Question Generation -->
+      <path d="M 460 404 L 460 432" class="line" />
+      <text x="468" y="421" class="txt-cond">Yes</text>
+
+      <!-- 6. DYNAMIC AI QUESTION GENERATION -->
+      <rect x="270" y="432" width="380" height="52" class="node-rect-ai" />
+      <text x="460" y="452" class="txt-title" style="fill:#6b21a8;">Dynamic AI Question Generation Engine</text>
+      <text x="460" y="471" class="txt-sub" style="fill:#581c87;">Google Gemini 2.5 Flash / CS API: 3 MCQs + 1 Descriptive Prompt</text>
+
+      <!-- Flow: Question Gen -> Sensor Init -->
+      <path d="M 460 484 L 460 512" class="line" />
+
+      <!-- 7. INITIALIZE EXAM & MEDIA STREAMS -->
+      <rect x="290" y="512" width="340" height="48" class="node-rect" />
+      <text x="460" y="532" class="txt-title">Initialize Exam &amp; Media Streams</text>
+      <text x="460" y="549" class="txt-sub">Webcam (OpenCV / MediaPipe) &amp; Mic Audio Stream</text>
+
+      <!-- Flow: Media Init -> Multi-modal Group Box -->
+      <path d="M 460 560 L 460 588" class="line" />
+
+      <!-- 8. MULTI-MODAL AI ANALYSIS CONTAINER -->
+      <rect x="45" y="588" width="830" height="280" class="group-box" />
+      <text x="65" y="609" class="group-lbl">Real-Time Multi-Modal AI Detection Modules (Continuous Frame-by-Frame Monitoring)</text>
+
+      <!-- Sub-module 1: Face Count -->
+      <g transform="translate(65, 624)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Face Presence &amp; Count</text>
+        <text x="117" y="40" class="txt-sub">Dlib Frontal Face / MediaPipe</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">N = 0 (Absent) | N &gt; 1 (Multiple)</text>
+      </g>
+
+      <!-- Sub-module 2: Eye Gaze -->
+      <g transform="translate(342, 624)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Eye Gaze Tracking</text>
+        <text x="117" y="40" class="txt-sub">Sclera / Pupil Ratio Analysis</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">Direction: Center / Left / Right</text>
+      </g>
+
+      <!-- Sub-module 3: Blink & Liveness -->
+      <g transform="translate(620, 624)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Blink &amp; Liveness</text>
+        <text x="117" y="40" class="txt-sub">Eye Aspect Ratio (EAR)</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">Anti-Spoofing Verification</text>
+      </g>
+
+      <!-- Sub-module 4: Head Pose -->
+      <g transform="translate(65, 712)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Head Pose Estimation</text>
+        <text x="117" y="40" class="txt-sub">3D-to-2D solvePnP Projection</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">Yaw / Pitch Angle Tracking</text>
+      </g>
+
+      <!-- Sub-module 5: Mouth Tracking -->
+      <g transform="translate(342, 712)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Mouth &amp; Lip Tracking</text>
+        <text x="117" y="40" class="txt-sub">Lip Landmark Euclidean Dist</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">State: Mouth Open / Close</text>
+      </g>
+
+      <!-- Sub-module 6: Object Detection -->
+      <g transform="translate(620, 712)">
+        <rect x="0" y="0" width="235" height="70" class="node-submodule" />
+        <text x="117" y="21" class="txt-title" style="font-size:13.5px;">Object Detection</text>
+        <text x="117" y="40" class="txt-sub">YOLOv3-Tiny (COCO Classes)</text>
+        <text x="117" y="57" class="txt-sub" style="fill:#0369a1; font-weight:bold;">Detects Phone, Laptop, Books</text>
+      </g>
+
+      <!-- Sub-module 7: Acoustic Noise (Center Bottom) -->
+      <g transform="translate(225, 798)">
+        <rect x="0" y="0" width="470" height="54" class="node-submodule" style="stroke:#0284c7;" />
+        <text x="235" y="22" class="txt-title" style="font-size:13.5px;">Acoustic Noise &amp; Speech Detection</text>
+        <text x="235" y="40" class="txt-sub">PyAudio / Web Audio Stream Analysis | Amplitude vs Threshold (2000)</text>
+      </g>
+
+      <!-- Flow: Multi-modal box -> Telemetry Aggregator -->
+      <path d="M 460 868 L 460 894" class="line" />
+
+      <!-- 9. TELEMETRY VECTOR GENERATION -->
+      <rect x="280" y="894" width="360" height="46" class="node-rect" />
+      <text x="460" y="913" class="txt-title" style="font-size:13.5px;">Generate Frame Telemetry Vector</text>
+      <text x="460" y="929" class="txt-sub">[Timestamp, FaceStatus, Blink, Gaze, Mouth, Objects, Pose]</text>
+
+      <!-- Flow: Telemetry -> Anomaly Evaluation Diamond -->
+      <path d="M 460 940 L 460 966" class="line" />
+
+      <!-- 10. ANOMALY EVALUATION DIAMOND -->
+      <polygon points="460,966 565,1003 460,1040 355,1003" class="node-diamond" />
+      <text x="460" y="998" class="txt-title">Violation / Anomaly</text>
+      <text x="460" y="1014" class="txt-title">Detected?</text>
+
+      <!-- Violation YES Branch -> Warning Alert -->
+      <path d="M 355 1003 L 205 1003 L 205 1032" class="line" />
+      <text x="270" y="996" class="txt-cond">Yes</text>
+
+      <rect x="110" y="1032" width="190" height="46" class="node-alert" />
+      <text x="205" y="1052" class="txt-alert">Trigger Audio Beep &amp; HUD Alert</text>
+      <text x="205" y="1067" class="txt-sub" style="fill:#7f1d1d; font-weight:bold;">Visual HUD Banner &amp; Frequency Alert</text>
+
+      <!-- Violation NO Branch & Alert join into Logging Node -->
+      <path d="M 205 1078 L 205 1102 L 328 1102" class="line" />
+      <path d="M 460 1040 L 460 1078" class="line" />
+      <text x="468" y="1060" class="txt-cond">No</text>
+
+      <!-- 11. FORENSIC AUDIT LOG & DASHBOARD UPDATE -->
+      <rect x="330" y="1078" width="260" height="48" class="node-output" />
+      <text x="460" y="1098" class="txt-title" style="fill:#166534; font-size:13.5px;">Append to Activity Log</text>
+      <text x="460" y="1114" class="txt-sub" style="fill:#166534;">Write Record to 'activity.txt' &amp; 'activity.json'</text>
+
+      <!-- Right Output: Real-time UI Display -->
+      <path d="M 590 1102 L 695 1102" class="line-blue" />
+      <rect x="695" y="1078" width="180" height="48" class="node-rect" style="stroke:#1d4ed8; fill:#f8fafc;" />
+      <text x="785" y="1098" class="txt-title" style="fill:#1d4ed8; font-size:13px;">Live Exam Display</text>
+      <text x="785" y="1114" class="txt-sub">Visual Overlay &amp; Feed HUD</text>
+
+      <!-- Flow: Logging -> End Decision Diamond -->
+      <path d="M 460 1126 L 460 1152" class="line" />
+
+      <!-- 12. SESSION TERMINATION DIAMOND -->
+      <polygon points="460,1152 560,1189 460,1226 360,1189" class="node-diamond" />
+      <text x="460" y="1184" class="txt-title">Exam Timer Over /</text>
+      <text x="460" y="1200" class="txt-title">Submitted?</text>
+
+      <!-- Session NOT Over -> Loop back to Multi-modal capture -->
+      <path d="M 360 1189 L 25 1189 L 25 728 L 43 728" class="line" />
+      <text x="150" y="1181" class="txt-cond">No (Next Frame Loop)</text>
+
+      <!-- Session Over YES -> Automated AI Grading Pipeline -->
+      <path d="M 460 1226 L 460 1252" class="line" />
+      <text x="468" y="1242" class="txt-cond">Yes</text>
+
+      <!-- 13. AUTOMATED AI GRADING PIPELINE CONTAINER -->
+      <rect x="65" y="1252" width="790" height="150" class="group-box-ai" />
+      <text x="85" y="1272" class="group-lbl-ai">Automated AI Grading &amp; Evaluation Pipeline (backend/ai_evaluator.py)</text>
+
+      <!-- Section A Grading -->
+      <g transform="translate(85, 1284)">
+        <rect x="0" y="0" width="225" height="50" class="node-submodule-ai" />
+        <text x="112" y="21" class="txt-title" style="font-size:12.5px; fill:#581c87;">Section A: MCQ Evaluation</text>
+        <text x="112" y="38" class="txt-sub">Deterministic Key Matching (/3.0)</text>
+      </g>
+
+      <!-- Section B Grading: Filter & Gemini -->
+      <g transform="translate(330, 1284)">
+        <rect x="0" y="0" width="505" height="50" class="node-submodule-ai" />
+        <text x="252" y="21" class="txt-title" style="font-size:12.5px; fill:#581c87;">Section B: Subjective Writing AI Grading</text>
+        <text x="252" y="38" class="txt-sub">Regex Non-Answer Filter + Google Gemini 2.5 Flash Semantic Rubric (/5.0)</text>
+      </g>
+
+      <!-- Composite Calculation -->
+      <g transform="translate(230, 1344)">
+        <rect x="0" y="0" width="460" height="44" class="node-rect-ai" style="stroke:#9333ea;" />
+        <text x="230" y="19" class="txt-title" style="font-size:13px; fill:#6b21a8;">Composite Academic Score Calculation</text>
+        <text x="230" y="34" class="txt-sub" style="font-weight:bold; fill:#581c87;">Total Score = Section A (3.0 Pts) + Section B (5.0 Pts) = Total / 8.0 Pts</text>
+      </g>
+
+      <!-- Connectors inside AI Pipeline -->
+      <path d="M 197 1334 L 197 1366 L 228 1366" class="line-purple" />
+      <path d="M 582 1334 L 582 1366 L 692 1366" class="line-purple" />
+
+      <!-- Flow: Grading Pipeline -> Database / Results -->
+      <path d="M 460 1402 L 460 1430" class="line" />
+
+      <!-- 14. SAVE TO DB & RESULTS DASHBOARD -->
+      <rect x="270" y="1430" width="380" height="50" class="node-rect-accent" />
+      <text x="460" y="1450" class="txt-title" style="fill:#1d4ed8;">Save Records &amp; Display Candidate Dashboard</text>
+      <text x="460" y="1468" class="txt-sub">Store Incident Audit Trail &amp; Present Score Breakdown (/results)</text>
+
+      <!-- Flow: Results -> End Node -->
+      <path d="M 460 1480 L 460 1508" class="line" />
+
+      <!-- 15. END NODE -->
+      <rect x="385" y="1508" width="150" height="38" class="node-oval" />
+      <text x="460" y="1532" class="txt-title">End</text>
+
+    </svg>
+  </div>
+
+  <div class="caption">Figure: Operational Methodology and Architecture Flowchart of the AI-Based Online Exam Proctoring System</div>
+
+</body>
+</html>

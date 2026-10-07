@@ -1,4 +1,4 @@
-﻿# Virtual Environment
+# Virtual Environment
 .venv/
 venv/
 env/
@@ -24,5 +24,6 @@ logs/
 # OS Specific
 .DS_Store
 Thumbs.db
-desktop.ini
 .vercel
+.env.local
+.env*.local

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Master Proctoring Orchestration Engine.
 Author: Sole Contributor / Creator
 Coordinates Face, Eye, Blink, Pose, Mouth, Object, and Audio detectors into a unified frame telemetry pipeline.
@@ -101,10 +101,18 @@ class ProctorEngine:
         annotated_frame = frame.copy()
         
         # Draw bounding boxes for faces
-        for face in faces:
+        for idx, face in enumerate(faces):
             x, y, w, h = face.left(), face.top(), face.width(), face.height()
-            color = (0, 0, 255) if is_violation else (0, 255, 0)
+            is_multi = len(faces) >= 2
+            color = (0, 0, 255) if (is_violation or is_multi) else (0, 255, 0)
             cv2.rectangle(annotated_frame, (x, y), (x + w, y + h), color, 2)
+            if is_multi:
+                cv2.putText(annotated_frame, f"CONCERN: Person {idx+1}", (x, max(15, y - 8)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 255), 2)
+
+        if len(faces) >= 2:
+            cv2.putText(annotated_frame, f"CONCERN: MULTIPLE PERSONS DETECTED ({len(faces)})", (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
 
         # Draw Head Pose Orientation vector
         if landmarks and "nose_pt" in pose_res and "proj_pt" in pose_res:
