@@ -11,7 +11,38 @@
 
     <div class="hero-actions">
         {% if session.get('user') %}
-            <a href="/precheck" class="btn-large btn-primary"><i class="fa-solid fa-play"></i> Start Examination Session</a>
+            <div class="candidate-portal-card" style="background: rgba(255, 255, 255, 0.95); border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 24px 28px; margin: 20px auto 28px; max-width: 680px; box-shadow: 0 12px 36px -8px rgba(37,99,235,0.15); text-align: left;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;">
+                    <div>
+                        <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: .05em;">Authenticated Candidate</span>
+                        <h2 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 2px 0 0;"><i class="fa-solid fa-user-circle" style="color: #2563eb;"></i> {{ session['user']['username'] }}</h2>
+                    </div>
+                    <span class="badge-status badge-ok" style="font-size: 12px; padding: 6px 14px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-fingerprint"></i> Biometric Verified
+                    </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px;">
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">Step 1: Identity</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #16a34a; margin-top: 2px;"><i class="fa-solid fa-circle-check"></i> Biometrics Passed</div>
+                    </div>
+                    <div style="background: #eff6ff; border: 1.5px solid #93c5fd; border-radius: 12px; padding: 12px 14px;">
+                        <span style="font-size: 11px; color: #2563eb; font-weight: 700;">Step 2: Diagnostics</span>
+                        <div style="font-size: 13px; font-weight: 800; color: #1e40af; margin-top: 2px;"><i class="fa-solid fa-arrow-right"></i> System Pre-Check</div>
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">Step 3: Examination</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #64748b; margin-top: 2px;"><i class="fa-solid fa-lock"></i> AI Live Session</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="/precheck" class="btn-large btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; width: 100%; font-size: 16px; padding: 15px 24px; font-weight: 800; box-shadow: 0 8px 24px rgba(37,99,235,.35);">
+                        <i class="fa-solid fa-play"></i> Start Examination Session (Proceed to Pre-Check)
+                    </a>
+                </div>
+            </div>
         {% else %}
             <a href="/login" class="btn-large btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Candidate Sign In</a>
             <a href="/signup" class="btn-large btn-outline"><i class="fa-solid fa-user-plus"></i> Create Account</a>

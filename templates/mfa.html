@@ -224,7 +224,7 @@
 
     <button id="wa-auth-btn"
             class="btn-biometric"
-            data-next="{{ next_url | default('/exam') }}">
+            data-next="{{ next_url | default('/') }}">
       <i class="fa-solid fa-shield-check"></i>
       Verify with Biometrics
     </button>
@@ -239,4 +239,15 @@
 
   </div>
 </div>
+<script>
+  // Auto-prompt biometric sensor on page load after brief UI render
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
+      const authBtn = document.getElementById("wa-auth-btn");
+      if (authBtn && !authBtn.disabled) {
+        authBtn.click();
+      }
+    }, 450);
+  });
+</script>
 {% endblock %}

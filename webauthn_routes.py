@@ -87,7 +87,7 @@ def _take_challenge(kind):
 def _safe_next(target):
     if target and target.startswith("/") and not target.startswith("//") and "\\" not in target:
         return target
-    return url_for("exam")
+    return url_for("index")
 
 
 def _session_username():
@@ -115,8 +115,10 @@ def security_page():
     username = _session_username()
     if not username:
         return redirect(url_for("login"))
+    next_url = _safe_next(request.args.get("next"))
     return render_template("security.html", username=username,
-                           credentials=store.list_credentials(username))
+                           credentials=store.list_credentials(username),
+                           next_url=next_url)
 
 
 @bp.get("/mfa")

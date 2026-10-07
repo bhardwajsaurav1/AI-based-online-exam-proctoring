@@ -108,13 +108,13 @@ def login():
             if webauthn_store.has_credentials(uname):
                 # Has biometrics enrolled → require biometric MFA step
                 session['pending_mfa'] = {'user': user, 't': time.time()}
-                next_url = request.args.get('next', url_for('exam'))
+                next_url = request.args.get('next', url_for('index'))
                 return redirect(url_for('webauthn.mfa_page', next=next_url))
             else:
                 # No biometrics yet → log in but prompt to set up biometrics
                 session['user'] = user
                 session['show_biometric_setup'] = True
-                return redirect(url_for('webauthn.security_page'))
+                return redirect(url_for('webauthn.security_page', next=url_for('index')))
         else:
             flash('Invalid username/email or password.', 'error')
     return render_template('login.html')
@@ -132,19 +132,19 @@ def signup():
             if user:
                 session['user'] = user
                 session['show_biometric_setup'] = True
-            return redirect(url_for('webauthn.security_page'))
+            return redirect(url_for('webauthn.security_page', next=url_for('index')))
         else:
             flash('Registration failed. Username or email may already be registered.', 'error')
     return render_template('signup.html')
 
 @app.route('/skip_biometric_setup')
 def skip_biometric_setup():
-    """Allow users to bypass biometric setup and go straight to the exam."""
+    """Allow users to bypass biometric setup and go straight to the exam dashboard."""
     session.pop('show_biometric_setup', None)
     if 'user' not in session:
         return redirect(url_for('login'))
-    flash('You can set up biometrics anytime from the Security tab.', 'success')
-    return redirect(url_for('exam'))
+    flash('You can set up biometrics anytime from the Security tab.', 'info')
+    return redirect(url_for('index'))
 
 @app.route('/clear_setup_flag', methods=['POST'])
 def clear_setup_flag():

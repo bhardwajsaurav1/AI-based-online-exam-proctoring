@@ -163,8 +163,15 @@
 
       try {
         await register(label, authenticatorType);
-        setStatus(statusEl, "\u2713 Device enrolled successfully! Reloading...", false);
-        setTimeout(function () { window.location.reload(); }, 900);
+        const urlParams = new URLSearchParams(window.location.search);
+        const nextUrl = urlParams.get("next") || (document.querySelector(".setup-hero") ? "/" : null);
+        if (nextUrl) {
+          setStatus(statusEl, "\u2713 Biometrics enrolled successfully! Redirecting to Exam Dashboard...", false);
+          setTimeout(function () { window.location.href = nextUrl; }, 800);
+        } else {
+          setStatus(statusEl, "\u2713 Device enrolled successfully! Reloading...", false);
+          setTimeout(function () { window.location.reload(); }, 900);
+        }
       } catch (e) {
         setStatus(statusEl, friendly(e), true);
         setButtonLoading(btn, false);
