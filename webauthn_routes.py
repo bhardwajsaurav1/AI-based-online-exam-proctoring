@@ -57,15 +57,24 @@ def username_of(user):
     return str(user)
 
 
+def _get_host():
+    raw_host = request.headers.get("X-Forwarded-Host") or request.headers.get("Host") or request.host
+    return raw_host.split(",")[0].strip()
+
+
 def _rp_id():
-    return os.environ.get("WEBAUTHN_RP_ID") or request.host.split(":")[0]
+    if os.environ.get("WEBAUTHN_RP_ID"):
+        return os.environ["WEBAUTHN_RP_ID"]
+    host = _get_host()
+    return host.split(":")[0]
 
 
 def _origin():
     if os.environ.get("WEBAUTHN_ORIGIN"):
         return os.environ["WEBAUTHN_ORIGIN"]
     proto = request.headers.get("X-Forwarded-Proto", request.scheme).split(",")[0].strip()
-    return f"{proto}://{request.host}"
+    host = _get_host()
+    return f"{proto}://{host}"
 
 
 def _user_handle(username):
