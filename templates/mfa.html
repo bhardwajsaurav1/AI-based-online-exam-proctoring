@@ -207,10 +207,13 @@
       <div class="bio-icon-inner"><i class="fa-solid fa-fingerprint"></i></div>
     </div>
 
-    <h1 class="mfa-title">Biometric Verification</h1>
+    <h1 class="mfa-title">Biometric Identity Verification</h1>
     <p class="mfa-subtitle">
-      One more step &mdash; verify your identity using your device biometrics,
-      Windows Hello, Face&nbsp;ID, or USB security key.
+      {% if has_credentials %}
+        Verify your identity using your device biometric sensor, Windows Hello, Face ID, or Passkey.
+      {% else %}
+        One-touch security verification &mdash; touch your biometric sensor, Windows Hello, Face ID, or Passkey to verify your identity.
+      {% endif %}
     </p>
 
     <div class="device-icons">
@@ -224,6 +227,7 @@
 
     <button id="wa-auth-btn"
             class="btn-biometric"
+            data-has-creds="{{ 'true' if has_credentials else 'false' }}"
             data-next="{{ next_url | default('/') }}">
       <i class="fa-solid fa-shield-check"></i>
       Verify with Biometrics

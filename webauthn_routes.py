@@ -135,13 +135,19 @@ def mfa_page():
     username, _, _ = _auth_target()
     if not username:
         return redirect(url_for("login"))
-    return render_template("mfa.html", next_url=_safe_next(request.args.get("next")))
+    has_creds = store.has_credentials(username)
+    return render_template(
+        "mfa.html",
+        username=username,
+        has_credentials=has_creds,
+        next_url=_safe_next(request.args.get("next"))
+    )
 
 
 # ------------------------------------------------------------ registration
 @bp.post("/register/options")
 def register_options():
-    username = _session_username()
+    username, _, _ = _auth_target()
     if not username:
         return jsonify(error="Please log in first."), 401
 
@@ -179,7 +185,7 @@ def register_options():
 
 @bp.post("/register/verify")
 def register_verify():
-    username = _session_username()
+    username, user_obj, is_login_step = _auth_target()
     if not username:
         return jsonify(error="Please log in first."), 401
 
@@ -208,7 +214,14 @@ def register_verify():
         sign_count=verified.sign_count,
         label=label,
     )
-    return jsonify(ok=True)
+
+    if is_login_step:  # Complete login upon initial biometric enrollment
+        session.pop("pending_mfa", None)
+        session["user"] = user_obj
+    session["identity_verified_at"] = time.time()
+    session["auth_method"] = "password+webauthn"
+    next_dest = _safe_next(body.get("next"))
+    return jsonify(ok=True, redirect=next_dest)
 
 
 # ---------------------------------------------------------- authentication

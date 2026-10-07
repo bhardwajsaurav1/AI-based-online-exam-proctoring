@@ -68,7 +68,7 @@
    *    cross-platform = phone QR code / USB security key
    *    undefined      = browser picks (shows all options)
    */
-  async function register(label, authenticatorType) {
+  async function register(label, authenticatorType, nextUrl) {
     const opts = await postJSON("/webauthn/register/options", {
       authenticator_type: authenticatorType || null,
     });
@@ -87,7 +87,7 @@
         attestationObject: bufToB64u(cred.response.attestationObject),
       },
     };
-    return postJSON("/webauthn/register/verify", { credential: payload, label: label });
+    return postJSON("/webauthn/register/verify", { credential: payload, label: label, next: nextUrl });
   }
 
   /* ── Core: authenticate with an existing credential ── */
@@ -234,11 +234,21 @@
     if (authBtn) {
       authBtn.addEventListener("click", async function () {
         setButtonLoading(authBtn, true);
-        setStatus(statusEl, "Waiting for biometric verification...", false);
+        setStatus(statusEl, "Waiting for biometric sensor interaction...", false);
+        const hasCreds = authBtn.dataset.hasCreds === "true";
+        const nextUrl = authBtn.dataset.next || "/";
+
         try {
-          const res = await authenticate(authBtn.dataset.next);
-          setStatus(statusEl, "\u2713 Verified! Redirecting...", false);
-          window.location.href = res.redirect;
+          if (hasCreds) {
+            const res = await authenticate(nextUrl);
+            setStatus(statusEl, "\u2713 Biometric Identity Verified! Redirecting...", false);
+            setTimeout(function () { window.location.href = res.redirect || nextUrl; }, 500);
+          } else {
+            // First time on this domain -> Auto enroll & verify seamlessly in 1 touch
+            const res = await register("Candidate Biometric Device", undefined, nextUrl);
+            setStatus(statusEl, "\u2713 Biometric Identity Verified! Redirecting to Exam Dashboard...", false);
+            setTimeout(function () { window.location.href = res.redirect || nextUrl; }, 500);
+          }
         } catch (e) {
           setStatus(statusEl, friendly(e), true);
           setButtonLoading(authBtn, false);

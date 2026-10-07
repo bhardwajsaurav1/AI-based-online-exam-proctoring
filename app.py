@@ -103,18 +103,10 @@ def login():
         password = request.form.get('password')
         user = db.authenticate_user(username, password)
         if user:
-            from webauthn_routes import username_of
-            uname = username_of(user)
-            if webauthn_store.has_credentials(uname):
-                # Has biometrics enrolled → require biometric MFA step
-                session['pending_mfa'] = {'user': user, 't': time.time()}
-                next_url = request.args.get('next', url_for('index'))
-                return redirect(url_for('webauthn.mfa_page', next=next_url))
-            else:
-                # No biometrics yet → log in but prompt to set up biometrics
-                session['user'] = user
-                session['show_biometric_setup'] = True
-                return redirect(url_for('webauthn.security_page', next=url_for('index')))
+            # Route every candidate directly through Biometric MFA step
+            session['pending_mfa'] = {'user': user, 't': time.time()}
+            next_url = request.args.get('next', url_for('index'))
+            return redirect(url_for('webauthn.mfa_page', next=next_url))
         else:
             flash('Invalid username/email or password.', 'error')
     return render_template('login.html')
@@ -127,12 +119,11 @@ def signup():
         password = request.form.get('password')
         success = db.register_user(email, username, password)
         if success:
-            # Auto-login the new user and redirect straight to biometric setup
             user = db.authenticate_user(username, password)
             if user:
-                session['user'] = user
-                session['show_biometric_setup'] = True
-            return redirect(url_for('webauthn.security_page', next=url_for('index')))
+                session['pending_mfa'] = {'user': user, 't': time.time()}
+                return redirect(url_for('webauthn.mfa_page', next=url_for('index')))
+            return redirect(url_for('login'))
         else:
             flash('Registration failed. Username or email may already be registered.', 'error')
     return render_template('signup.html')
