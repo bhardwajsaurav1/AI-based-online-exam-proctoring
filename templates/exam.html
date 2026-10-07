@@ -135,8 +135,23 @@
                 <b id="tele-gaze" class="badge-status badge-ok">Center</b>
             </div>
             <div class="metric-row">
+                <span><i class="fa-solid fa-comment-dots"></i> Mouth Activity:</span>
+                <b id="tele-mouth" class="badge-status badge-ok">Closed &amp; Normal</b>
+            </div>
+            <div class="metric-row">
                 <span><i class="fa-solid fa-window-restore"></i> Window Focus:</span>
                 <b id="tele-focus" class="badge-status badge-ok">Active Tab</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-mobile-screen-button"></i> Prohibited Items:</span>
+                <b id="tele-object" class="badge-status badge-ok">Clean (No Items)</b>
+            </div>
+            <div class="metric-row">
+                <span><i class="fa-solid fa-microphone-lines"></i> Acoustic Noise / Mic:</span>
+                <b id="tele-audio" class="badge-status badge-ok">Active &amp; Quiet (0%)</b>
+            </div>
+            <div class="audio-meter-bar-container" style="width: 100%; height: 4px; background: #e2e8f0; border-radius: 2px; margin-top: -4px; margin-bottom: 8px; overflow: hidden;">
+                <div id="audio-meter-bar" style="width: 0%; height: 100%; background: #10b981; transition: width 0.08s ease, background-color 0.2s;"></div>
             </div>
 
             <div class="warning-counter-box">
@@ -187,8 +202,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<!-- High-Performance Neural Vision Face Detection (TensorFlow.js + BlazeFace) -->
+<!-- High-Performance Neural Vision Face & Object Detection (TensorFlow.js + BlazeFace + COCO-SSD) -->
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/blazeface@0.0.7/dist/blazeface.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
 <script src="{{ url_for('static', filename='js/exam.js') }}"></script>
 {% endblock %}

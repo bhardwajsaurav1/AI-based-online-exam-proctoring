@@ -29,7 +29,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     const teleFace = document.getElementById("tele-face");
     const telePose = document.getElementById("tele-pose");
     const teleGaze = document.getElementById("tele-gaze");
+    const teleMouth = document.getElementById("tele-mouth");
+    const teleObject = document.getElementById("tele-object");
     const teleFocus = document.getElementById("tele-focus");
+    const teleAudio = document.getElementById("tele-audio");
+    const audioMeterBar = document.getElementById("audio-meter-bar");
+
+    // Prohibited Object Detection
+    let cocoModel = null;
+    let detectedProhibitedObjects = [];
+    let objectViolationFrames = 0;
+    let visionFrameCount = 0;
+    const PROHIBITED_CLASSES = ["cell phone", "phone", "mobile phone", "laptop", "book", "tv", "remote", "tablet", "mouse", "keyboard"];
+
+    let mouthViolationFrames = 0;
+    let baselineMouthRatio = 1.30;
+    let calibratedMouthRatios = [];
+    let currentMicVolumePct = 0;
+
+    // Web Audio API Acoustic Surveillance
+    let audioContext = null;
+    let audioAnalyser = null;
+    let micStream = null;
+    let audioViolationFrames = 0;
+    const NOISE_THRESHOLD = 0.06; // Sensitive RMS threshold for talking / background noise
 
     const videoElem = document.getElementById("client-video");
     const canvasElem = document.getElementById("client-canvas");
@@ -227,19 +250,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // 6. Initialize Browser Webcam
+    // 6. Initialize Browser Webcam & Microphone Audio Stream
     async function startCamera() {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             console.warn("MediaDevices not supported on this browser.");
             return;
         }
+
+        // 6A. Acquire Camera Video Stream
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: { ideal: 640 }, height: { ideal: 480 } },
-                audio: true
+            const videoStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: { ideal: 640 }, height: { ideal: 480 } }
             });
             if (videoElem) {
-                videoElem.srcObject = stream;
+                videoElem.srcObject = videoStream;
                 videoElem.onloadedmetadata = () => {
                     videoElem.play();
                     if (canvasElem) {
@@ -248,22 +272,142 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 };
             }
-        } catch (err) {
-            console.warn("Webcam access declined or not available:", err);
+        } catch (vErr) {
+            console.warn("Camera stream access error:", vErr);
             if (teleFace) {
                 teleFace.textContent = "Camera Denied";
                 teleFace.className = "badge-status badge-warn";
             }
         }
+
+        // 6B. Explicitly Acquire Microphone Stream for Acoustic Surveillance
+        try {
+            const audioStream = await navigator.mediaDevices.getUserMedia({ 
+                audio: { echoCancellation: true, noiseSuppression: false, autoGainControl: true } 
+            });
+            initWebAudioMonitoring(audioStream);
+        } catch (aErr) {
+            console.warn("Microphone stream access error:", aErr);
+            if (teleAudio) {
+                teleAudio.textContent = "Mic Denied / Inactive";
+                teleAudio.className = "badge-status badge-warn";
+            }
+        }
+    }
+
+    // 6C. Real-Time Web Audio API Acoustic Noise Surveillance
+    function initWebAudioMonitoring(stream) {
+        try {
+            if (!stream || stream.getAudioTracks().length === 0) {
+                if (teleAudio) {
+                    teleAudio.textContent = "Mic Inactive";
+                    teleAudio.className = "badge-status badge-warn";
+                }
+                return;
+            }
+
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            audioContext = new AudioCtx();
+            audioAnalyser = audioContext.createAnalyser();
+            audioAnalyser.fftSize = 256;
+            audioAnalyser.smoothingTimeConstant = 0.2;
+
+            micStream = audioContext.createMediaStreamSource(stream);
+            micStream.connect(audioAnalyser);
+
+            // Auto-resume AudioContext on first user interaction if suspended
+            const unlockAudio = () => {
+                if (audioContext && audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            };
+            document.addEventListener('click', unlockAudio, { passive: true });
+            document.addEventListener('keydown', unlockAudio, { passive: true });
+            document.addEventListener('focus', unlockAudio, { passive: true });
+
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            if (teleAudio) {
+                teleAudio.textContent = "Active & Quiet (0%)";
+                teleAudio.className = "badge-status badge-ok";
+            }
+
+            startAudioMonitorLoop();
+        } catch (e) {
+            console.warn("Audio monitoring initialization error:", e);
+            if (teleAudio) {
+                teleAudio.textContent = "Mic Error";
+                teleAudio.className = "badge-status badge-warn";
+            }
+        }
+    }
+
+    function startAudioMonitorLoop() {
+        if (!audioAnalyser || isDisqualified) return;
+
+        // Ensure AudioContext is running
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume().catch(() => {});
+        }
+
+        const bufferLength = audioAnalyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        audioAnalyser.getByteTimeDomainData(dataArray);
+
+        let sum = 0;
+        for (let i = 0; i < bufferLength; i++) {
+            const val = (dataArray[i] - 128) / 128.0;
+            sum += val * val;
+        }
+        const rms = Math.sqrt(sum / bufferLength);
+        const volumePct = Math.min(100, Math.round(rms * 400)); // Normalized 0-100% volume
+        currentMicVolumePct = volumePct;
+
+        // Update live visual audio meter bar
+        if (audioMeterBar) {
+            audioMeterBar.style.width = `${Math.min(100, volumePct * 1.5)}%`;
+            audioMeterBar.style.backgroundColor = (volumePct > 20) ? "#ef4444" : "#10b981";
+        }
+
+        if (!isCalibrating) {
+            if (rms > NOISE_THRESHOLD || volumePct > 20) {
+                audioViolationFrames++;
+                if (teleAudio) {
+                    teleAudio.textContent = `🚨 Talking/Noise (${volumePct}%)`;
+                    teleAudio.className = "badge-status badge-warn";
+                }
+                // If noise/speech is sustained for ~1.0s (12 frames)
+                if (audioViolationFrames > 12 && violationCooldown === 0) {
+                    violationCooldown = 25;
+                    triggerViolation("Acoustic Noise / Talking Detected", `Mic volume level: ${volumePct}%`);
+                }
+            } else {
+                if (audioViolationFrames > 0) audioViolationFrames--;
+                if (teleAudio && audioViolationFrames === 0) {
+                    teleAudio.textContent = `Active & Quiet (${volumePct}%)`;
+                    teleAudio.className = "badge-status badge-ok";
+                }
+            }
+        }
+
+        setTimeout(() => {
+            requestAnimationFrame(startAudioMonitorLoop);
+        }, 80);
     }
 
     await startCamera();
 
-    // 7. Load BlazeFace Deep Learning Model
+    // 7. Load BlazeFace & COCO-SSD Deep Learning Models
     async function loadAIModels() {
         try {
             if (typeof blazeface !== 'undefined') {
                 blazeModel = await blazeface.load();
+            }
+            if (typeof cocoSsd !== 'undefined') {
+                cocoModel = await cocoSsd.load();
             }
             isAIReady = true;
         } catch (e) {
@@ -305,6 +449,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         let faceBoxes = [];
         let headPoseState = "Forward";
         let gazeState = "Center";
+        let mouthState = "Closed";
 
         // --- STEP A: DEEP LEARNING BLAZEFACE DETECTION ---
         if (blazeModel) {
@@ -333,7 +478,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                             faceInsideBox = false;
                         }
 
-                        // Estimate Head Pose & Gaze from Facial Keypoints
+                        // Estimate Head Pose, Gaze, and Mouth Opening from Facial Keypoints
                         // Landmarks: [rightEye, leftEye, noseTip, mouthCenter, rightEar, leftEar]
                         if (p.landmarks && p.landmarks.length >= 4) {
                             const rightEyeX = w - p.landmarks[0][0];
@@ -352,6 +497,34 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 headPoseState = "Forward";
                                 gazeState = "Center";
                             }
+
+                            // Calculate Mouth Vertical Aspect Ratio (MAR proxy)
+                            const eyeMidY = (p.landmarks[0][1] + p.landmarks[1][1]) / 2;
+                            const noseY = p.landmarks[2][1];
+                            const mouthY = p.landmarks[3][1];
+                            const eyeToNose = Math.abs(noseY - eyeMidY);
+                            const noseToMouth = Math.abs(mouthY - noseY);
+                            const mouthRatio = noseToMouth / (eyeToNose || 1.0);
+
+                            // Calibrate resting baseline mouth ratio during initial warmup
+                            if (isCalibrating) {
+                                if (mouthRatio > 0.5 && mouthRatio < 2.5) {
+                                    calibratedMouthRatios.push(mouthRatio);
+                                    if (calibratedMouthRatios.length > 5) {
+                                        baselineMouthRatio = calibratedMouthRatios.reduce((a, b) => a + b, 0) / calibratedMouthRatios.length;
+                                    }
+                                }
+                            } else {
+                                // Multi-modal Speech & Mouth Tracking:
+                                // 1. Substantial vertical jaw opening (>35% above calibrated resting baseline)
+                                const isJawDropped = mouthRatio > Math.max(1.68, baselineMouthRatio * 1.35);
+                                // 2. Vocal speech activity detected by microphone (>16% volume)
+                                const isVocalizing = currentMicVolumePct > 16;
+
+                                if (isJawDropped || isVocalizing) {
+                                    mouthState = "Open";
+                                }
+                            }
                         }
                     });
                     faceDetected = true;
@@ -359,8 +532,53 @@ document.addEventListener("DOMContentLoaded", async () => {
             } catch (e) {}
         }
 
+        // --- STEP A2: REAL-TIME PROHIBITED OBJECT DETECTION (COCO-SSD) ---
+        visionFrameCount++;
+        let foundProhibitedLabel = null;
+        if (cocoModel) {
+            try {
+                const objPredictions = await cocoModel.detect(videoElem);
+                detectedProhibitedObjects = [];
+
+                if (objPredictions && objPredictions.length > 0) {
+                    objPredictions.forEach(pred => {
+                        const cName = pred.class.toLowerCase();
+                        // Sensitive threshold (0.28) ensures objects anywhere in frame (corners, edges, handheld) are detected
+                        if (pred.score > 0.28 && PROHIBITED_CLASSES.some(cls => cName.includes(cls))) {
+                            detectedProhibitedObjects.push({
+                                bbox: pred.bbox,
+                                class: cName,
+                                score: pred.score
+                            });
+                            foundProhibitedLabel = cName;
+                        }
+                    });
+                }
+
+                if (!isCalibrating) {
+                    if (foundProhibitedLabel) {
+                        objectViolationFrames++;
+                        if (teleObject) {
+                            teleObject.textContent = `🚨 ${foundProhibitedLabel.toUpperCase()}`;
+                            teleObject.className = "badge-status badge-danger";
+                        }
+                        if (objectViolationFrames >= 2 && violationCooldown === 0) {
+                            violationCooldown = 30;
+                            triggerViolation(`Prohibited Object: ${foundProhibitedLabel.toUpperCase()}`, `Detected unauthorized ${foundProhibitedLabel} anywhere in camera view`);
+                        }
+                    } else {
+                        if (objectViolationFrames > 0) objectViolationFrames--;
+                        if (teleObject && objectViolationFrames === 0) {
+                            teleObject.textContent = "Clean (No Items)";
+                            teleObject.className = "badge-status badge-ok";
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+
         // --- STEP B: DRAW TARGET HUD & CALIBRATION OVERLAYS ---
-        const hasViolation = !isCalibrating && (!faceDetected || !faceInsideBox || faceBoxes.length > 1 || headPoseState !== "Forward");
+        const hasViolation = !isCalibrating && (!faceDetected || !faceInsideBox || faceBoxes.length > 1 || headPoseState !== "Forward" || mouthState === "Open" || detectedProhibitedObjects.length > 0);
         const hudColor = isCalibrating ? "#38bdf8" : (hasViolation ? "#ef4444" : "#10b981");
 
         // Draw Target Bounding Zone
@@ -429,6 +647,31 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         });
 
+        // 2. Draw Detected Prohibited Object Bounding Boxes (Cell phone, Laptop, Books anywhere in frame)
+        const vidW = videoElem.videoWidth || w;
+        const vidH = videoElem.videoHeight || h;
+        const scaleX = w / vidW;
+        const scaleY = h / vidH;
+
+        detectedProhibitedObjects.forEach(obj => {
+            const ox = obj.bbox[0] * scaleX;
+            const oy = obj.bbox[1] * scaleY;
+            const ow = obj.bbox[2] * scaleX;
+            const oh = obj.bbox[3] * scaleY;
+            const mirOX = w - (ox + ow);
+
+            ctx.strokeStyle = "#ef4444";
+            ctx.lineWidth = 3.5;
+            ctx.strokeRect(mirOX, oy, ow, oh);
+
+            ctx.fillStyle = "rgba(239, 68, 68, 0.92)";
+            const bannerWidth = Math.max(160, ow);
+            ctx.fillRect(mirOX, Math.max(0, oy - 22), bannerWidth, 22);
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 12px sans-serif";
+            ctx.fillText(`🚨 BANNED: ${obj.class.toUpperCase()} (${Math.round(obj.score * 100)}%)`, mirOX + 6, Math.max(15, oy - 6));
+        });
+
         // Calibration Overlay Guide Banner
         if (isCalibrating) {
             ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
@@ -485,6 +728,25 @@ document.addEventListener("DOMContentLoaded", async () => {
                     }
                 }
 
+                // Mouth Movement & Speech Tracking
+                if (mouthState === "Open") {
+                    mouthViolationFrames++;
+                    if (teleMouth) {
+                        teleMouth.textContent = "🚨 Mouth Open / Speaking";
+                        teleMouth.className = "badge-status badge-warn";
+                    }
+                    if (mouthViolationFrames > 22 && violationCooldown === 0) {
+                        violationCooldown = 25;
+                        triggerViolation("Mouth Movement / Speech Detected", "Sustained speaking, whispering, or open mouth observed");
+                    }
+                } else {
+                    if (mouthViolationFrames > 0) mouthViolationFrames--;
+                    if (teleMouth && mouthViolationFrames === 0) {
+                        teleMouth.textContent = "Closed & Normal";
+                        teleMouth.className = "badge-status badge-ok";
+                    }
+                }
+
                 // Trigger concern faster (5 frames ~ 400ms) for multiple persons, or 15 frames for gaze/position
                 const requiredFrames = faceBoxes.length >= 2 ? 5 : 15;
                 if (faceViolationFrames >= requiredFrames && violationCooldown === 0) {
@@ -498,6 +760,23 @@ document.addEventListener("DOMContentLoaded", async () => {
                 }
             } else {
                 faceViolationFrames = 0;
+                if (mouthState === "Open") {
+                    mouthViolationFrames++;
+                    if (teleMouth) {
+                        teleMouth.textContent = "🚨 Mouth Open / Speaking";
+                        teleMouth.className = "badge-status badge-warn";
+                    }
+                    if (mouthViolationFrames > 22 && violationCooldown === 0) {
+                        violationCooldown = 25;
+                        triggerViolation("Mouth Movement / Speech Detected", "Sustained speaking, whispering, or open mouth observed");
+                    }
+                } else {
+                    if (mouthViolationFrames > 0) mouthViolationFrames--;
+                    if (teleMouth && mouthViolationFrames === 0) {
+                        teleMouth.textContent = "Closed & Normal";
+                        teleMouth.className = "badge-status badge-ok";
+                    }
+                }
                 if (teleFace) {
                     teleFace.textContent = "Centered & Verified";
                     teleFace.className = "badge-status badge-ok";
